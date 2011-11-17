@@ -26,7 +26,12 @@ def design_matrix(conditions=[],impulses=None):
 	## Gen the impulse and hrf convolved
 	## dm and row-wise truncate the latter.
 	if impulses == None:
-		impulses = np.ones_like(conditions,dtype='f')
+		impulses = []
+		for cond in conditions:
+			if (cond == 0) | (cond == '0'):
+				impulses.extend(0.0)
+			else
+				impulses.extend(1.0)
 
 	for ii,cond in enumerate(conditions):
 		dm_1[ii,cond] = impulses[ii]
