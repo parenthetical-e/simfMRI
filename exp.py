@@ -366,7 +366,7 @@ def delta_noise(n_iter,n_cond,n_trials,noise_lev=1):
 	## Write the data; build the name then use it
 	time_code = datetime.datetime.now().strftime("%m%d%Y@%H%M%S")
 	exp_conds = 'i'+str(n_iter) + 'c'+str(n_cond)+ 't'+str(n_trials)
-	f_name = 'delta_'+noise_lev+'noise_' + exp_conds+'_' +\
+	f_name = 'delta_'+str(noise_lev)+'noise_' + exp_conds+'_' +\
 			time_code + '.pkl'
 	print('Simulation complete, saving data to {0}'.format(f_name))
 	fid = open(f_name,'wb')
