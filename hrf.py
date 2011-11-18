@@ -32,6 +32,7 @@ def noisy_double_gamma(width):
 		b2: .9
 		c: .35
 	"""
+	import scipy.stats as stats
 	from math import fabs 
 		# absolute value
 
@@ -40,11 +41,11 @@ def noisy_double_gamma(width):
 	
 	## Randomly pick a key/param and 
 	## add noise, then calc the HRF.
-	params = dict(a1=0.6, a2=12.0, b2=0.9, c=0.35)
+	params = dict(a1=6, a2=12.0, b2=0.9, c=0.35)
 	keys = params.keys()
 	np.random.shuffle(keys) # inplace
-	par = params[key[0]]
-	params[key[0]] = par + fabs(stats.norm.rvs(loc=par,scale=par/2.))
+	par = params[keys[0]]
+	params[keys[0]] = stats.norm.rvs(loc=par,scale=par/4.)
 		# Add white noise scaled to 1/2 of loc
 		# fabs() taken to prevent any of the params 
 		# dropping below zero, which would be bad.
