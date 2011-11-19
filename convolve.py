@@ -2,17 +2,13 @@
 import numpy as np
 import simfMRI
 
-def w_double_gamma(impulses,noisy=False):
+def w_double_gamma(impulses):
 	"""
 	Convolves impulses, a 1 or 2d (column-oriented) array, 
 	with the double gamma hemodynamic response function (hrf).  
 	"""
-	if noisy:
-		hrf = simfMRI.hrf.double_gamma(20)
-		hrf_params = None
-	else:
-		hrf,hrf_params = simfMRI.noisy_double_gamma(20)
 
+	hrf = simfMRI.hrf.double_gamma(20)
 	n_col = 0
 	try: 
 		n_col =	impulses.shape[1]
@@ -24,12 +20,12 @@ def w_double_gamma(impulses,noisy=False):
 		print('Impulses is not an array. Assume it is 1d.')
 	
 	if n_col == 1:
-		return np.convolve(impulses,hrf), hrf_params
+		return np.convolve(impulses,hrf)
 	else:
 		bold = np.zeros_like(impulses)
 		for ii in range(n_col):
 
 			bold[:,ii] = np.convolve(
 					impulses[:,ii],hrf)[0:impulses.shape[0]]
-		return bold, hrf_params
+		return bold
 
