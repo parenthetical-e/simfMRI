@@ -1,6 +1,19 @@
 """Misc helper functions for simfMRI experiments and their data."""
 import numpy as np
 
+def load_results(pickle_name):
+	"""
+	Load a results pickle, easily.
+	"""
+	import cPickle
+
+	fid = open(pickle_name,'rb')
+	p_data = cPickle.load(fid)
+	fid.close()
+
+	return p_data
+
+
 def repack_glm(results, glm_name):
 	"""
 	Unpack and repack select fields of the named (glm object) in a 
@@ -57,3 +70,37 @@ def flatten_results(results,data_name):
 			data = list(data) # assume 1d already, force type
 
 	return data
+
+
+def zero_huge_betas(repacked_glm):
+	"""
+	Finds a 
+	"""
+
+def dm_Z(design_matrix):
+	"""
+	Z-scores, then returns, each column in design_matrix.
+	"""
+	import numpy as np
+
+	c_mean = design_matrix.mean(0)
+	c_std = design_matrix.std(0)
+	dm_Z = (design_matrix - c_mean) / c_std
+	
+	return dm_Z
+
+
+def dm_percent(design_matrix):
+	"""
+	Calculates, then returns, percent change for each column in 
+	design_matrix.
+	"""
+
+	# x is raw, y is transformed,
+	# u is the column mean
+	# y = 100 + ((x_i - u)/u) * 100
+	c_mean = design_matrix.mean(0)
+	dm_P = 100 + (((design_matrix-c_mean)/c_mean) * 100)
+
+	return dm_P
+

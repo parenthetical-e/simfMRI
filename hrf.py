@@ -24,8 +24,8 @@ def double_gamma(width):
 
 def param_double_gamma(width,a1,a2,b2,c):
 	"""
-	Returns a HRF based on params. For canonical parameters use,
-	(a1=6, a2=12.0, b2=0.9, c=0.35).
+	Returns a HRF based on params. Canonical parameters are,
+	a1=6, a2=12.0, b2=0.9, and c=0.35.
 	"""
 
 	## The independent params are provided,
@@ -45,7 +45,7 @@ def param_double_gamma(width,a1,a2,b2,c):
 
 def preturb_params(params=dict(a1=6, a2=12.0, b2=0.9, c=0.35)):
 	"""
-	Add rescaled white noise to a randomly selected param.
+	Add scaled white noise to a randomly selected param.
 	"""
 	import scipy.stats as stats
 	
