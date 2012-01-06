@@ -16,7 +16,7 @@ import simfMRI
 def run(n_iter,n_cond,n_trials,noise_lev=1):
 	"""
 	A event related BOLD simulation experiment, with a single condition, 
-	compare fits to a noisy simulated BOLD timecourse between the cononical 
+	compare fits to a noisy simulated BOLD timecourse between the canonical 
 	unit impulse HRF to HRF models derived from Rescorla-Wagner RL models.  
 
 	noise_lev was added to allow parametric scaling of the white noise 

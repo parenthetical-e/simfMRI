@@ -33,10 +33,10 @@ def hist_t_delta(results,glm_name,hist_title='Data'):
 		# fig init
 	
 	# X is 0:base,1:unit,2:values,3:rpes,4:acc,5:rand,6:dummy
-	dataloc = [1,4,2,3,5]
-	labels = ['Unit','Accuracy','Value','RPE','Random']
-	colors = ['black','orange','green','blue','purple']
-	hist_params = dict(bins=100,histtype='stepfilled',alpha=0.4)
+	dataloc = [4,2,3,5]
+	labels = ['Accuracy','Value','RPE','Random']
+	colors = ['orange','green','blue','black']
+	hist_params = dict(bins=100,histtype='stepfilled',alpha=0.4,normed=True)
 	for lc,lb,co in zip(dataloc,labels,colors):
 		print(lc,lb,co)
 		ax.hist(tvalues[:,lc],label=lb,color=co,**hist_params)
@@ -46,9 +46,9 @@ def hist_t_delta(results,glm_name,hist_title='Data'):
 	ax.axvline(x=4.03214,label='p < 0.005',color='red',linewidth=1)
 
 	ax.set_xlabel('t-values')
-	ax.set_ylabel('Counts')
+	ax.set_ylabel('Normalized counts')
 	plt.xlim(-10,15)
-	plt.ylim(0,90)
+	plt.ylim(0,.6)
 	plt.legend(bbox_to_anchor=(1.10, 1.10))
 	plt.title(hist_title)
 	plt.show()
