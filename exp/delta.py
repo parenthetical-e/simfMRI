@@ -1,5 +1,5 @@
 #! /usr/opt/local/python
-""" fMRI and behavoiral/rl experiments."""
+""" fMRI and behavioral/rl experiments."""
 import os
 import cPickle
 import numpy as np
@@ -22,7 +22,7 @@ def run(n_iter,n_cond,n_trials):
 
 	The goal is two fold.  (1) Create a template for later experiements. 
 	(2) Asses simplest possible case for significant relations between the 
-	univariate and parametric models.
+	univariate and parametric models.ch 
 	"""
 
 	data = defaultdict(list)
