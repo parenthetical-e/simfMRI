@@ -35,9 +35,9 @@ def repack_glm(results, glm_name):
 
 def repack_X(results):
 	"""
-	Using a results object from simfMRI.exp,repack each column 
+	Using a results object from simfMRI.exp, repack each column 
 	in each entry in X into single columns, keyed on the original
-	column number.  Facilitates plotting ofX data.  
+	column number.  Facilitates plotting of X data.  
 	For histograms, pair with flatten_results()
 	"""
 	from collections import defaultdict
@@ -53,7 +53,7 @@ def repack_X(results):
 def flatten_results(results,data_name):
 	"""
 	Unpacks and flattens a dict (results) assuming its values 
-	are 1 or 2d lists. Facilitates hitogram creation.
+	are 1 or 2d lists. Facilitates histogram creation.
 	"""
 
 	data = results[data_name]
@@ -76,31 +76,4 @@ def zero_huge_betas(repacked_glm):
 	"""
 	Finds a 
 	"""
-
-def dm_Z(design_matrix):
-	"""
-	Z-scores, then returns, each column in design_matrix.
-	"""
-	import numpy as np
-
-	c_mean = design_matrix.mean(0)
-	c_std = design_matrix.std(0)
-	dm_Z = (design_matrix - c_mean) / c_std
-	
-	return dm_Z
-
-
-def dm_percent(design_matrix):
-	"""
-	Calculates, then returns, percent change for each column in 
-	design_matrix.
-	"""
-
-	# x is raw, y is transformed,
-	# u is the column mean
-	# y = 100 + ((x_i - u)/u) * 100
-	c_mean = design_matrix.mean(0)
-	dm_P = 100 + (((design_matrix-c_mean)/c_mean) * 100)
-
-	return dm_P
-
+	pass

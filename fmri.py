@@ -43,14 +43,14 @@ def design_matrix(conditions=[],impulses=None):
 	return dm_1,dm_2
 
 
-def design_matrix_params(conditions=[],impulses=None,params=dict()):
+def design_matrix_hrf_params(conditions=[],impulses=None,hrf_params=dict()):
 	"""
 	Creates and returns two design matrices (dm) based on conditions and 
 	impulses (if provided).
 	
 	dm_1 is just a mapping from conditions to columns in the dm, while 
 	the second is the first column-wise  convolved with 
-	param_double_gamma(), which relies on params.  
+	param_double_gamma(), which relies on hrf_params.  
 	"""
 	
 	conditions = list(conditions) # force, just in case.
@@ -74,10 +74,10 @@ def design_matrix_params(conditions=[],impulses=None,params=dict()):
 		dm_1[ii,cond] = impulses[ii]
 
 	## Preturb a randomly slected cannonical HRF
-	## parameter.  Use those params in the convolvution.
+	## parameter.  Use those hrf_params in the convolvution.
 	for col_num in range(dm_1.shape[1]):
 		bold = simfMRI.convolve.w_param_double_gamma(
-				dm_1[:,col_num],**params)
+				dm_1[:,col_num],**hrf_params)
 		dm_2[:,col_num] = bold[0:dm_1.shape[0]]
 
 	return dm_1,dm_2
@@ -100,4 +100,39 @@ def noise(N, noise_type):
 
 	return noise 
 		# a np.array()
+		
+
+def dm_Z(design_matrix):
+	"""
+	Z-scores, then returns, each column in design_matrix.
+	"""
+	import numpy as np
+
+	## Get the Z-scores
+	# x is original, y is transformed,
+	# u is the column mean, 
+	# s is the column standard deviation
+	# repeat for each row (i) and column (j):
+	# 	y_i_j = (x_i_j - u_j) / s_j
+	c_mean = design_matrix.mean(0)
+	c_std = design_matrix.std(0)
+	dm_Z = (design_matrix - c_mean) / c_std
+	
+	return dm_Z
+
+
+def dm_percent(design_matrix):
+	"""
+	Calculates, then returns, percent change for each column in 
+	design_matrix.
+	"""
+
+	# x is original, y is transformed,
+	# u is the column mean
+	# repeat for each row (i) and column (j):
+	# 	y_i_j = 100 + ((x_i_j - u_j)/u_j) * 100
+	c_mean = design_matrix.mean(0)
+	dm_P = np.nan_to_num(100 + (((design_matrix-c_mean)/c_mean) * 100))
+	
+	return dm_P
 
