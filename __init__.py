@@ -1,8 +1,7 @@
-__all__ = ['exp','exp_parallel','fmri','convolve','hrf','plot','misc']
-import exp
-import exp_parallel
-import fmri
+__all__ = ['base','hrf','norm','misc']
+
+import base
 import hrf
-import convolve
-import plot
 import misc
+import norm
+import fmri_reduced

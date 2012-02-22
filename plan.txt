@@ -1,0 +1,7 @@
+import simfMRI
+fmri = simfMRI.Fmri(pars)
+fmri.hrf(pars)
+fmri.dm(pars).bold(pars).norm(kind='Z')
+fmri.fit().format_results()
+
+simfMRI.reduce(fmri.results())

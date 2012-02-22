@@ -1,79 +1,24 @@
-"""Misc helper functions for simfMRI experiments and their data."""
-import numpy as np
+""" Who knows what, really.  The miscellaneous goes here."""
 
-def load_results(pickle_name):
+def preturb_double_gamma(percent):
 	"""
-	Load a results pickle, easily.
+	Add scaled (by percent) white noise to a randomly selected double gamma
+	HRF parameter.  Return a dict of HRF parameters.
 	"""
-	import cPickle
-
-	fid = open(pickle_name,'rb')
-	p_data = cPickle.load(fid)
-	fid.close()
-
-	return p_data
-
-
-def repack_glm(results, glm_name):
-	"""
-	Unpack and repack select fields of the named (glm object) in a 
-	simfMRI.exp results object. The repacked_glm is a dict whose 
-	values are 1d or 2d lists of data.
-	"""
-	from collections import defaultdict
-
-	repacked_glms = defaultdict(list)
-	for glm in results[glm_name]:
-		repacked_glms['beta'].append(glm.params)
-		repacked_glms['t'].append(glm.tvalues)
-		repacked_glms['p'].append(glm.pvalues)
-		repacked_glms['ci'].append(glm.conf_int())
-		repacked_glms['resid'].append(glm.resid)
+	import scipy.stats as stats
 	
-	return repacked_glms
+	params = {a1:6.0,a2:12.0,b1:0.9,b2:0.9,c:0.35}
+	
+	keys = params.keys()
+	np.random.shuffle(keys) # inplace
+	par = params[keys[0]]
+	params[keys[0]] = stats.norm.rvs(loc=par,scale=par/(1./percent))
+		## Grab a random value from the normal curve
+		## with its SD reduced by 0.percent
+	
+	params('width') = 32
+	params['TR'] = 1
+		## Add the remaining (unpreturbed) params
+	
+	return params
 
-
-def repack_X(results):
-	"""
-	Using a results object from simfMRI.exp, repack each column 
-	in each entry in X into single columns, keyed on the original
-	column number.  Facilitates plotting of X data.  
-	For histograms, pair with flatten_results()
-	"""
-	from collections import defaultdict
-
-	repacked_X = defaultdict(list)
-	xi_col_index = range(results['X'][0].shape[1])
-	for xi in results['X']:
-		[repacked_X[col].append(xi[:,col]) for col in xi_col_index]
-
-	return repacked_X
-
-
-def flatten_results(results,data_name):
-	"""
-	Unpacks and flattens a dict (results) assuming its values 
-	are 1 or 2d lists. Facilitates histogram creation.
-	"""
-
-	data = results[data_name]
-	try:
-		data = [item for sublist in data.values() for item in sublist]
-		print('{0} is a dict, flattening its values.'.format(data_name))
-	except TypeError:
-		data = data.values() # Assume 1d 
-	except AttributeError:
-		try:
-			data = [item for sublist in data for item in sublist]
-			print('{0} is a (now flat) list.'.format(data_name))
-		except TypeError:
-			data = list(data) # assume 1d already, force type
-
-	return data
-
-
-def zero_huge_betas(repacked_glm):
-	"""
-	Finds a 
-	"""
-	pass
