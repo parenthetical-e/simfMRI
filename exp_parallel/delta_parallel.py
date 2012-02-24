@@ -12,7 +12,6 @@ import rl
 import simBehave
 import simfMRI
 
-
 def run(n_iter,n_cond,n_trials):
 	"""
 	A event related BOLD simulation experiment, with a single condition, 
