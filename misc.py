@@ -87,5 +87,4 @@ def write_hdf(map_results_list):
 	import h5py
 	f = h5py.File('simfMRI.hdf5')
 	for r in map_results_list:
-		
-		
+		pass

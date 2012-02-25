@@ -1,4 +1,4 @@
-__all__ = ['simfMRI','delta_parallel']
+__all__ = ['simfMRI','base']
 
 import simfMRI
-import delta_parallel
+import base
