@@ -1,26 +1,25 @@
 #! /usr/opt/local/python
-""" fMRI and behavioral/rl experiments."""
+""" A base class for fMRI simulations."""
 import os
 import h5py
 import numpy as np
 from scikits.statsmodels.api import GLS
 from collections import defaultdict
 
-import rl
 import simBehave
 import simfMRI
 
 class Exp():
 	def __init__(self,N,k,behave='learn'):
 		# User defined parameters
-		self._n_cond = N
-		self._n_trials = k		
+		self.n_cond = N
+		self.n_trials = k		
 		self.behave = behave
 
 		# Hard coded parameters
-		self.dm_to_simulate = ('boxcar',)
 		self.noise = 'white'
-		self.param_resolution = 0.05
+		self.dm_to_simulate = ('boxcar',)
+		self.col_for_bold = [1,]
 		
 		# The normalization function is:
 		self.normalize_f = simfMRI.fmri.dm_Z
@@ -45,10 +44,10 @@ class Exp():
 		# the fMRI data.
 		if self.behave == 'learn':
 			self.trialset,self.acc,self.p = simBehave.behave.learn(
-					self._n_cond,self._n_trials,3,True)
+					self.n_cond,self.n_trials,3,True)
 		elif self.behave == 'random':
 			self.trialset,self.acc,self.p = simBehave.behave.random(
-					self._n_cond,self._n_trials,3,True)
+					self.n_cond,self.n_trials,3,True)
 		else:
 			raise ValueError(
 					'{0} is not known.  Try learn or random.'.format(behave))
@@ -63,15 +62,13 @@ class Exp():
 			raise ValueError('{0} was not understood.'.format(kind))
 	
 	
-	def create_bold(self,cols=[1,]):
+	def create_bold(self):
 		""" 
 		Uses the design matrix (dm) and noise parameters to create and
 		set the BOLD signal. 
 		"""
 		
-		# By row add cols from dm, 1d and Nd 
-		# require seperate treatment
-		dm_cols = self.dm[:,cols]
+		dm_cols = self.dm[:,self.col_for_bold]
 		if dm_cols.ndim == 1:
 			self.bold = dm_cols
 		else:
@@ -143,7 +140,7 @@ class Exp():
 			# Create dm, and bold
 			# then norm them seperatly.
 			self.create_dm(kind=dm_name)
-			self.create_bold(cols=[1,])
+			self.create_bold()
 			self.dm = self.normalize_f(self.dm)
 			self.bold = self.normalize_f(self.bold)
 			self.fit(model='GLS')

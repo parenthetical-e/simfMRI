@@ -38,7 +38,6 @@ def design_matrix(conditions=[],impulses=None):
 		bold = simfMRI.convolve.w_double_gamma(dm_1[:,col_num]) 
 		dm_2[:,col_num] = bold[0:dm_1.shape[0]]
 	
-	print dm_1
 	return dm_1,dm_2
 
 
@@ -61,16 +60,16 @@ def design_matrix_hrf_params(conditions=[],impulses=None,hrf_params=dict()):
 
 	## Gen the impulse and hrf convolved
 	## dm and row-wise truncate the latter.
+	## Gen the impulse and hrf convolved
+	## dm and row-wise truncate the latter.
 	if impulses == None:
-		impulses = []
-		for cond in conditions:
-			if (cond == 0) | (cond == '0'):
-				impulses.append(0.0)
-			else:
-				impulses.append(1.0)
-
+		impulses = [1,] * len(conditions)
+	
 	for ii,cond in enumerate(conditions):
-		dm_1[ii,cond] = impulses[ii]
+		if cond == 0:
+			dm_1[ii,cond] = 1
+		else:
+			dm_1[ii,cond] = impulses[ii]
 
 	## Preturb a randomly slected cannonical HRF
 	## parameter.  Use those hrf_params in the convolvution.
