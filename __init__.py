@@ -6,3 +6,4 @@ import hrf
 import convolve
 import plot
 import misc
+import ptests
