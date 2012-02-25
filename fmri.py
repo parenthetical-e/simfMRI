@@ -26,20 +26,19 @@ def design_matrix(conditions=[],impulses=None):
 	## Gen the impulse and hrf convolved
 	## dm and row-wise truncate the latter.
 	if impulses == None:
-		impulses = []
-		for cond in conditions:
-			if (cond == 0) | (cond == '0'):
-				impulses.append(0.0)
-			else:
-				impulses.append(1.0)
-
+		impulses = [1,] * len(conditions)
+	
 	for ii,cond in enumerate(conditions):
-		dm_1[ii,cond] = impulses[ii]
+		if cond == 0:
+			dm_1[ii,cond] = 1
+		else:
+			dm_1[ii,cond] = impulses[ii]
 
 	for col_num in range(dm_1.shape[1]):
 		bold = simfMRI.convolve.w_double_gamma(dm_1[:,col_num]) 
 		dm_2[:,col_num] = bold[0:dm_1.shape[0]]
-
+	
+	print dm_1
 	return dm_1,dm_2
 
 
@@ -102,37 +101,26 @@ def noise(N, noise_type):
 		# a np.array()
 		
 
-def dm_Z(design_matrix):
-	"""
-	Z-scores, then returns, each column in design_matrix.
-	"""
-	import numpy as np
-
-	## Get the Z-scores
-	# x is original, y is transformed,
-	# u is the column mean, 
-	# s is the column standard deviation
-	# repeat for each row (i) and column (j):
-	# 	y_i_j = (x_i_j - u_j) / s_j
-	c_mean = design_matrix.mean(0)
-	c_std = design_matrix.std(0)
-	dm_Z = (design_matrix - c_mean) / c_std
+def dm_Z(arr):
+	arr = np.array(arr)
+	c_std = arr.std(0)
 	
-	return dm_Z
+	# Replace 0 stdev cols with 1.
+	try:
+		c_std[c_std == 0.0] = 1.0
+	except TypeError:
+		# if arr was 1d, the above generates an error
+		# handle this directly
+		c_std = 1
+
+	return (arr - arr.mean(0)) / c_std
 
 
-def dm_percent(design_matrix):
-	"""
-	Calculates, then returns, percent change for each column in 
-	design_matrix.
-	"""
-
+def dm_percent(arr):
 	# x is original, y is transformed,
 	# u is the column mean
 	# repeat for each row (i) and column (j):
 	# 	y_i_j = 100 + ((x_i_j - u_j)/u_j) * 100
-	c_mean = design_matrix.mean(0)
-	dm_P = np.nan_to_num(100 + (((design_matrix-c_mean)/c_mean) * 100))
-	
-	return dm_P
+	c_mean = arr.mean(0)
+	return np.nan_to_num(100 + (((arr-c_mean)/c_mean) * 100))
 

@@ -13,17 +13,13 @@ import simfMRI
 class Exp():
 	def __init__(self,N,k,behave='learn'):
 		# User defined parameters
-		self._n_cond = N
-		self._n_trials = k		
-		self.behave = behave
-
-		# Hard coded parameters
-		self.dm_to_simulate = ('boxcar',)
-		self.noise = 'white'
-		self.param_resolution = 0.05
+		self.pars.n_cond = N
+		self.pars.n_trials = k		
+		self.pars.behave = behave
 		
-		# The normalization function is:
-		self.normalize_f = simfMRI.fmri.dm_Z
+		# Hard coded parameters
+		self.pars.noise = 'white'
+		self.pars.param_resolution = 0.05
 		
 		# Initialize the results and/or simulation- 
 		# state attributes
@@ -36,6 +32,11 @@ class Exp():
 		self.bold = np.array([])
 		self.model = None
 		
+		self.best_rl_pars = None 
+		self.best_logL = None
+		self.values = []
+		self.rpes = []
+		
 		# Where everything that will be returned ends up:
 		self.results = {}
 		
@@ -43,22 +44,37 @@ class Exp():
 		
 		# Create the behavoiral data that will be used to create
 		# the fMRI data.
-		if self.behave == 'learn':
+		if self.pars.behave == 'learn':
 			self.trialset,self.acc,self.p = simBehave.behave.learn(
-					self._n_cond,self._n_trials,3,True)
-		elif self.behave == 'random':
+					self.pars.n_cond,self.pars.n_trials,3,True)
+		elif self.pars.behave == 'random':
 			self.trialset,self.acc,self.p = simBehave.behave.random(
-					self._n_cond,self._n_trials,3,True)
+					self.pars.n_cond,self.pars.n_trials,3,True)
 		else:
 			raise ValueError(
 					'{0} is not known.  Try learn or random.'.format(behave))
+		
+		# Find best RL learning parameters for the behavoiral data
+		# then generate the final data and unpack it into a list.
+		self.best_rl_pars, self.best_logL = rl.fit.ml_delta(
+				self.acc,self.trialset,self.pars.param_resolution)
+		v_dict, rpe_dict = rl.reinforce.b_delta(
+				self.acc,self.trialset,self.best_rl_pars[0])
+		self.values = rl.misc.unpack(v_dict,self.trialset)
+		self.rpes = rl.misc.unpack(rpe_dict,self.trialset)
 	
 	
 	def create_dm(self,kind=''):
 		""" Sets X to the specified design matrix kind. """
 		from simfMRI.exp_parallel import dm
 		if kind == 'boxcar':
-			dm._dm_boxcar(self)
+			dm._dm_boxcar()
+		elif kind == 'value':
+			dm._dm_value()
+		elif kind == 'rpe':
+			dm._dm_rpe()
+		elif kind == 'random':
+			dm._dm_random()
 		else:
 			raise ValueError('{0} was not understood.'.format(kind))
 	
@@ -78,7 +94,7 @@ class Exp():
 			self.bold = dm_cols.mean(1)
 		
 		# Now add noise
-		self.bold += simfMRI.fmri.noise(self.bold.shape[0],self.noise)
+		self.bold += simfMRI.fmri.noise(self.bold.shape[0],self.pars.noise)
 	
 	
 	def reformat_model(self):
@@ -100,8 +116,6 @@ class Exp():
 		model_results['mse_model'] = self.model.mse_model
 		model_results['mse_resid'] = self.model.mse_resid
 		model_results['mse_total'] = self.model.mse_total
-		model_results['pretty_summary'] = self.model.summary()
-		
 		return model_results
 	
 	
@@ -113,7 +127,11 @@ class Exp():
 		self.results['trialset'] = self.trialset
 		self.results['p'] = self.p
 		self.results['acc'] = self.acc
-
+		
+		self.results['best_rl_pars'] = self.best_rl_pars
+		self.results['best_logL'] = self.best_logL
+		self.results['values'] = self.values
+		self.results['rpes'] = self.rpes
 		
 		model_dict = {}
 		model_dict = self.reformat_model()
@@ -139,15 +157,12 @@ class Exp():
 		"""
 		self.batch_code = str(code)
 		
-		for dm_name in self.dm_to_simulate:
-			# Create dm, and bold
-			# then norm them seperatly.
+		dm_to_simulate = ('boxcar','value','rpe','random')
+		for dm_name in dm_to_simulate:
 			self.create_dm(kind=dm_name)
+			self.dm = simfMRI.fmri.dm_Z(self.dm)
 			self.create_bold(cols=[1,])
-			self.dm = self.normalize_f(self.dm)
-			self.bold = self.normalize_f(self.bold)
 			self.fit(model='GLS')
-			
 			self.create_results(dm_name=dm_name)
  		
  		return self.results
