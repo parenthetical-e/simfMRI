@@ -1,4 +1,6 @@
+import re
 import numpy as np
+from copy import deepcopy
 from collections import defaultdict
 
 import simfMRI
@@ -8,8 +10,11 @@ import simfMRI
 # - define BOLD, add noise
 # - do regressions
 
-class Fmri():
-	""" A class for running easily parallelizable fMRI simulations. """
+class ERfMRI():
+	"""
+	A template class for running easily parallelizable event-related fMRI
+	simulations.
+	"""
 	
 	def __init__(self,trials=[],data={},TR=1,ISI=1):
 		# Set up user variables
@@ -34,21 +39,23 @@ class Fmri():
 		if (self.ISI % self.TR) > 0.0:
 			raise ValueError('ISI must a even multiple of the TR.')
 		elif self.ISI > self.TR:
-			from copt import deepcopy
 			# Use multplier to transform data and trials into units
 			# of TR from their native ISI.
 			mult = self.ISI/self.TR
 			
 			trials_copy = deepcopy(self.trials)
+				## Needed to prevent circular updates
 			trials_mult = []
-			[self.trials_mult.extend([t,] + [0,]*(mult-1)) for 
+			[self.trials_mult.extend([t,] + [0,]*(mult-1)) for
 					t in trials_copy]
 			
 			data_copy = deepcopy(self.data)
 			data_mult = defaultdict(list)
 			for k,vals in data_copy.items():
 				[data_mult[k].extend([v,] + [0,]*(mult-1)) for v in vals]
-	
+			
+			# Finally replace results with the
+			# expanded version
 			self.trials = trials_mult
 			self.data = data_mult
 	
@@ -62,6 +69,9 @@ class Fmri():
 		
 		arr = np.asarray(arr)
 		arr_c = np.zeros_like(arr)
+			#@ Where the convolved data goes
+		
+		# Assume 2d (or really N > 1 d), fall back to 1d.
 		try:
 			for ii in range(arr.shape[1]):
 				arr_c[:,ii] = np.convolve(arr[:,ii],basis)[0:arr.shape[0]]
@@ -71,28 +81,37 @@ class Fmri():
 		return arr_c
 	
 	
-	def create_dm(self,kind='',convolve=True):
-		""" Use trials to return a design matrix. """
+	def create_dm(self,name='',convolve=True):
+		""" 
+		Creates a design matrix (dm) using the constructors in simfMRI.dm.
 		
-		""" Sets X to the specified design matrix kind. """
+		<name> - the name of the constructor you want use.
+		<convolve> - if True, the dm is convolved the HRF defined by
+			self.basis_f().
+		"""
 		from simfMRI.dm import dm_construct
-		if kind == 'boxcar':
-			dm_construct._dm_boxcar(self)
-		else:
-			raise ValueError('{0} was not understood.'.format(kind))
+		
+		dmc = getattr(name,dm_construct)
+		self.dm = dmc()
 		
 		if convolve:
 			self.dm = self.convolve_hrf(self.dm)
 	
 	
-	def create_bold(self,arr):
-		""" Use only trials ans data to simulate bold signal """
-		self.bold = arr += self.noise_f(len(arr))
+	def create_bold(self,arr,convolve=True):
+		""" The provided array becomes a (noisy) bold signal. """
+		
+		self.bold += self.noise_f(len(arr))
+		if convolve:
+			self.bold = self.convolve_hrf(bold)
+
 	
-	
-	def reformat_model(self):
+	def _reformat_model(self):
 		"""
-		Extract relevant data from a regression model object into a dict.
+		*Use save_to_results() to store the simulation's state.*
+		
+		This private method just extracts relevant data from a regression
+		model object into a dict.
 		"""
 		
 		model_results = {}
@@ -114,29 +133,86 @@ class Fmri():
 		return model_results
 	
 	
-	def create_results(self,dm_name=''):
-		# TODO: how to get all attrs and save them
-		
-		self.results['batch_code'] = self.batch_code
-		self.results['length'] = self.length
-		self.results['trialset'] = self.trialset
-		self.results['p'] = self.p
-		self.results['acc'] = self.acc
-		
-		
-		model_dict = {}
-		model_dict = self.reformat_model()
-		model_dict['dm'] = self.dm
-		model_dict['bold'] = self.bold
-		
-		self.results[dm_name] = {}
+	def save_to_results(self,name=''):
+		"""
+		Saves most of the state of the current simulation to results, keyed
+		on <name>.  Saves greedily, trading storage space for security and 
+		redundancy.
+		"""
+		# Global, model indepdnet, results fisrt
+		self.results['TR'] = self.TR
+		self.results['ISI'] = self.ISI
+		self.results['trials'] = self.trials
+
+		# Now the data
+		self.results[name] = {}
+		self.results[name]['data'] = self.data		
+		self.results[name]['dm'] = self.dm
+		self.results[name]['bold'] = self.bold
+
+		# And finally the regression model
+		model_dict = self._reformat_model()
 		for k,v in model_dict.items():
-			self.results[dm_name][k] = v
+			self.results[name][k] = v
 	
 	
 	def fit(self):
 		""" Calculate the regression parameters and statistics. """
 		from scikits.statsmodels.api import GLS
 		
-		self.model = GLS(self.Y,self.X).fit()
+		# Appends a dummy predictor and runs the regression
+		# 
+		# Dummy is added at the last minute so it does not 
+		# interact with normalization or smooithng routines.
+		dummy = np.array([1]*self.dm.shape[0])
+		dm_dummy = np.vstack((self.dm, dummy))
+		self.model = GLS(self.bold,dm_dummy).fit()
 	
+	
+	def contrast(contrast=np.array([])):
+		"""
+		Uses the current model to statistically compare (via t-test)
+		predictors. If <contrast> is 2d each row treated as a separate 
+		contrast.
+		"""
+		# TODO
+		pass
+
+	
+	def model_1(self):
+		from simfMRI.dm import dm_construct
+		
+		self.create_dm('boxcar',True)
+		self.create_bold(self.dm[:,1],True)
+		
+		self.dm = self.normalize_f(self.dm)
+		self.bold = self.normalize_f(self.bold)
+		
+		self.fit()
+	
+	
+	def run(self,code):
+		"""
+		Run all defined models, returning their tabulated results. 
+		
+		<code> - the unique batch or run code for this simulation.
+		
+		Models are any attribute of the form 'model_N' where N is an
+		integer (e.g. model_2, model_1012 or model_666).  Models take no
+		arguments.
+		"""
+		
+		self.results['batch_code'] = code
+		
+		# find all self.model_N attritubes and run them.
+		all_attr = dir(self)
+		for a in all_attr:
+			a_split = re.split('_',a)
+			if len(a_split) == 2:
+				if (a_split[0] == 'model') and (re.match('\A\d+\Z',a_split[1])):
+					amodel = getattr(self,a)
+					amodel()
+					self.save_to_results(name=a)
+		
+		return self.results
+		

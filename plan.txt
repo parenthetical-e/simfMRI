@@ -1,7 +1,12 @@
-import simfMRI
-fmri = simfMRI.Fmri(pars)
-fmri.hrf(pars)
-fmri.dm(pars).bold(pars).norm(kind='Z')
-fmri.fit().format_results()
+ERfMRI defines the template class, to run an experiment subclass it.
 
-simfMRI.reduce(fmri.results())
+I took the class/subclass approach to maximize flexibility,readability and maintainability at the cost of possible confusion for non-programmers.
+  
+The subclass should define any models you want to compare/simulate.  
+	See exp/example.py for an example.
+
+Once coded the experiment should be simply run by:
+results = [ExpSubclass(**params).run(i) for i range(100)]
+	# 100 iterations
+
+Making it simple to use with Ipython's engines, SGE, OGE or a Hadoop interface (with a suitable reducer of course).
