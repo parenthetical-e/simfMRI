@@ -1,59 +1,19 @@
 """A collection of hemodynamic response functions."""
 import numpy as np
 
-def double_gamma(width):
+def double_gamma(width=32,TR=1,a1=6.0,a2=12.,b1=0.9,b2=0.9,c=0.35):
 	"""
-	Returns a HRF using 'cannonical' parameters.
+	Returns a HRF.  Defaults are the canonical parameters.
 	"""
 
 	hrf = []
-	x = np.arange(width)
-	a1 = 6.
-	a2 = 12.
-	b2 = .9
-	b1 = b2
-	c = .35
-	d1 = a1*b1
-	d2 = a2*b2
-	f = lambda x: (x/d1)**a1 * np.exp( (d1-x)/ b1) - c * (x/d2)**a2 *\
-			np.exp( (d2-x)/ b2)
-	[hrf.append(f(ii)) for ii in x]
-
-	return np.array(hrf)
-
-
-def param_double_gamma(width,a1,a2,b2,c):
-	"""
-	Returns a HRF based on params. Canonical parameters are,
-	a1=6, a2=12.0, b2=0.9, and c=0.35.
-	"""
-
-	## The independent params are provided,
-	## calculate the dependent ones
-	b1 = b2
-	d1 = a1*b1
-	d2 = a2*b2
-
-	hrf = []
-	x = np.arange(width)
-	f = lambda x: (x/d1)**a1 * np.exp( (d1-x)/ b1) - c * (x/d2)**a2 *\
-			np.exp( (d2-x)/ b2)
-	[hrf.append(f(ii)) for ii in x]
-
-	return np.array(hrf)
-
-
-def preturb_params(params=dict(a1=6, a2=12.0, b2=0.9, c=0.35)):
-	"""
-	Add scaled white noise to a randomly selected param.
-	"""
-	import scipy.stats as stats
+	x_range = np.arange(width)
 	
-	keys = params.keys()
-	np.random.shuffle(keys) # inplace
-	par = params[keys[0]]
-	params[keys[0]] = stats.norm.rvs(loc=par,scale=par/4.)
-		## Grab a random value from the normal curve
-		## with its SD reduced by 0.25
+	d1 = a1*b1
+	d2 = a2*b2
+	f = lambda x: ((x/d1)**a1 * np.exp((d1-x)/ b1)) - (
+			c * (x/d2)**a2 *np.exp((d2-x)/ b2))
+	[hrf.append(f(x)) for x in x_range]
 
-	return params
+	return np.array(hrf)
+	
