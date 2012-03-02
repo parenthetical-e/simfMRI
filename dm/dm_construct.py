@@ -3,11 +3,15 @@ import numpy as np
 import simfMRI
 from simfMRI.dm.base import design_matrix
 
+# For template.py
 def boxcar(self):
 	dm, dm_hrf = design_matrix(self.trials,None)
 	self.dm = dm_hrf
 
 
+# =========
+# for rl.RW
+# =========
 def	base_box_acc(self):
 	dm_box = design_matrix(self.trials,None)
 	dm_acc = design_matrix(self.trials,self.data.['acc'])

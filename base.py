@@ -16,7 +16,7 @@ class ERfMRI():
 	simulations.
 	"""
 	
-	def __init__(self,trials=[],data={},TR=1,ISI=1):
+	def __init__(self,trials=[],data={},TR=2,ISI=2):
 		# Set up user variables
 		self.TR = TR
 		self.ISI = ISI
@@ -82,35 +82,35 @@ class ERfMRI():
 	
 	
 	def create_dm(self,name='',convolve=True):
-		""" 
-		Creates a design matrix (dm) using the constructors in simfMRI.dm.
+		"""
+		Creates a design matrix (dm) using the constructors in
+		simfMRI.dm.dm_construct
 		
 		<name> - the name of the constructor you want use.
-		<convolve> - if True, the dm is convolved the HRF defined by
+		<convolve> - if True, the dm is convolved with the HRF defined by
 			self.basis_f().
 		"""
 		from simfMRI.dm import dm_construct
 		
 		dmc = getattr(name,dm_construct)
-		self.dm = dmc()
+		self.dm = dmc(self)
 		
 		if convolve:
 			self.dm = self.convolve_hrf(self.dm)
 	
 	
-	def create_bold(self,arr,convolve=True):
-		""" The provided array becomes a (noisy) bold signal. """
+	def create_bold(self,arr):
+		""" The provided <arr>ay becomes a (noisy) bold signal. """
 		
-		self.bold += self.noise_f(len(arr))
-		if convolve:
-			self.bold = self.convolve_hrf(bold)
-
+		bold += self.noise_f(len(arr))
+		self.bold = self.convolve_hrf(bold)
+	
 	
 	def _reformat_model(self):
 		"""
-		*Use save_to_results() to store the simulation's state.*
+		Use save_to_results() to store the simulation's state.*
 		
-		This private method just extracts relevant data from a regression
+		This private method just extracts relevant data from the regression
 		model object into a dict.
 		"""
 		
@@ -136,20 +136,20 @@ class ERfMRI():
 	def save_to_results(self,name=''):
 		"""
 		Saves most of the state of the current simulation to results, keyed
-		on <name>.  Saves greedily, trading storage space for security and 
+		on <name>.  Saves greedily, trading storage space for security and
 		redundancy.
 		"""
 		# Global, model indepdnet, results fisrt
 		self.results['TR'] = self.TR
 		self.results['ISI'] = self.ISI
 		self.results['trials'] = self.trials
-
+		
 		# Now the data
 		self.results[name] = {}
-		self.results[name]['data'] = self.data		
+		self.results[name]['data'] = self.data
 		self.results[name]['dm'] = self.dm
 		self.results[name]['bold'] = self.bold
-
+		
 		# And finally the regression model
 		model_dict = self._reformat_model()
 		for k,v in model_dict.items():
@@ -161,29 +161,38 @@ class ERfMRI():
 		from scikits.statsmodels.api import GLS
 		
 		# Appends a dummy predictor and runs the regression
-		# 
-		# Dummy is added at the last minute so it does not 
+		#
+		# Dummy is added at the last minute so it does not
 		# interact with normalization or smooithng routines.
 		dummy = np.array([1]*self.dm.shape[0])
 		dm_dummy = np.vstack((self.dm, dummy))
+		
 		self.model = GLS(self.bold,dm_dummy).fit()
 	
 	
 	def contrast(contrast=np.array([])):
 		"""
-		Uses the current model to statistically compare (via t-test)
-		predictors. If <contrast> is 2d each row treated as a separate 
-		contrast.
+		Uses the current model to statistically compare predictors (t-test),
+		returning t and p values.
+		
+		<contrast> - a list of {1,0,-1} the same length as the number
+			of predictors in the model (sans the dummy).
+		
+		If <contrast> is 2d, each row is treated as a separate contrast.
 		"""
+		
 		# TODO
 		pass
-
+		return t, p
+	
 	
 	def model_1(self):
+		""" A very simple example model. """
+		
 		from simfMRI.dm import dm_construct
 		
 		self.create_dm('boxcar',True)
-		self.create_bold(self.dm[:,1],True)
+		self.create_bold(self.dm[:,1])
 		
 		self.dm = self.normalize_f(self.dm)
 		self.bold = self.normalize_f(self.bold)
@@ -193,9 +202,9 @@ class ERfMRI():
 	
 	def run(self,code):
 		"""
-		Run all defined models, returning their tabulated results. 
+		Run all defined models in order, returning their tabulated results.
 		
-		<code> - the unique batch or run code for this simulation.
+		<code> - the unique batch or run code for this experiment.
 		
 		Models are any attribute of the form 'model_N' where N is an
 		integer (e.g. model_2, model_1012 or model_666).  Models take no
@@ -206,10 +215,12 @@ class ERfMRI():
 		
 		# find all self.model_N attritubes and run them.
 		all_attr = dir(self)
+		all_attr.sort()
+		
 		for a in all_attr:
-			a_split = re.split('_',a)
-			if len(a_split) == 2:
-				if (a_split[0] == 'model') and (re.match('\A\d+\Z',a_split[1])):
+			a_s = re.split('_',a)
+			if len(a_s) == 2:
+				if (a_s[0] == 'model') and (re.match('\A\d+\Z',a_s[1])):
 					amodel = getattr(self,a)
 					amodel()
 					self.save_to_results(name=a)

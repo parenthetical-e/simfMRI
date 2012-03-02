@@ -8,29 +8,29 @@ def design_matrix(trials=[],impulses=None):
 	If <impulses> is not None a parametric design matrix is created based on
 	the elements in <impulses>.
 	"""
+	import numpy as np
 
-	
-	trials = list(trials) 
-	impulses = list(impulses)
-		## force, just in case.
-	
-	if len(trials) != len(impulses):
-		raise IndexError('trials and impulses and different lengths')
-	
 	cond_levels = sort(list(set(trials))) 
 		## Find and sort unique trials, aka condition levels
+		
+	trials = np.array(trials) 
+	impulses = np.array(impulses)
+	
+	if trials.shape[0] != impulses.shape[0]:
+		raise IndexError('trials and impulses and different lengths')
 
-	## Gen the impulse and hrf convolved
-	## dm and row-wise truncate the latter.
-	dm = np.zeros((len(trials),len(cond_levels)))
+	# Gen the impulse and hrf convolved
+	# dm and row-wise truncate the latter.
+	dm = np.zeros(trials.shape[0],len(cond_levels))
 	if impulses == None:
 		impulses = [1,] * len(trials)
 	
-	for ii,cond in enumerate(trials):
-		if cond == 0:
-			dm[ii,cond] = 1
-				## Column 0 is ALWAYS baseline
+	for cond in cond_levels:
+		cond_mask = cond == trials
+		if (cond == 0) or (cond == '0'):
+			dm[cond,cond_mask] = 1
+				## Cond 0 is ALWAYS baseline and is ALWAYS 1
 		else:
-			dm[ii,cond] = impulses[ii]
+			dm[cond,cond_mask] = impulses[cond_mask]
 	
 	return dm
