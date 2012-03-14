@@ -23,11 +23,11 @@ Now make 60 baseline (0) and experimental trials (1) then randomize their order.
 
 Now import the simfMRI module and create an instance using the simulated trials we just made.  We have no data for parametric models (so data = {}, an empty dictionary, and both the ISI and TR are 2 seconds).
 
-	# ERfMRI is a class, so we need to
+	# Exp is a class, so we need to
 	# make an experimental instance (called expi).
-	from simfMRI import base.ERfMRI
+	from simfMRI.base import Exp
 	
-	expi = ERfMRI(trials=trials,data={},TR=2,ISI=2)
+	expi = Exp(trials=trials,data={},TR=2,ISI=2)
 
 Then just run the experiment.
 	
@@ -38,7 +38,7 @@ Or if you want to run 100 iterations with different simulated trial structure fo
 (Note: there are other ways to do this, see 2. and 3. below.)
 
 	import numpy as np
-	from simfMRI import base.ERfMRI
+	from simfMRI import base.Exp
 
 	trials = np.array([0,]*60 + [1,]*60)	
 	
@@ -47,7 +47,7 @@ Or if you want to run 100 iterations with different simulated trial structure fo
 	
 	for i in range(100):
 		np.random.shuffle(trials)
-		expi = ERfMRI(trials=trials,data={},TR=2,ISI=2)
+		expi = Exp(trials=trials,data={},TR=2,ISI=2)
 		results.append(expi.run(i))
 			## The loop counter is used to 
 			## give each iteration a unique name

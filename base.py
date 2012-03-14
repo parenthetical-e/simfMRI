@@ -10,13 +10,15 @@ import simfMRI
 # - define BOLD, add noise
 # - do regressions
 
-class ERfMRI():
+class Exp():
 	"""
 	A template class for running easily parallelizable event-related fMRI
-	simulations.
+	experimental simulations.
 	"""
 	
 	def __init__(self,trials=[],data={},TR=2,ISI=2):
+		import simfMRI
+		
 		# Set up user variables
 		self.TR = TR
 		self.ISI = ISI
@@ -33,7 +35,8 @@ class ERfMRI():
 		self.noise_f = simfMRI.noise.white
 		self.normalize_f = simfMRI.norm.zscore
 		self.basis_f = simfMRI.hrf.double_gamma
-		self.basis_params = {width:32,TR:1,a1:6.0,a2:12.,b1:0.9,b2:0.9,c:0.35}
+		self.basis_params = {
+			'width':32,'TR':1,'a1':6.0,'a2':12.,'b1':0.9,'b2':0.9,'c':0.35}
 		
 		# Move from ISI to ITI time, if needed.
 		if (self.ISI % self.TR) > 0.0:
@@ -84,76 +87,102 @@ class ERfMRI():
 	def create_dm(self,name='',convolve=True):
 		"""
 		Creates a design matrix (dm) using the constructors in
-		simfMRI.dm.dm_construct
+		simfMRI.dm.construct
 		
 		<name> - the name of the constructor you want use.
 		<convolve> - if True, the dm is convolved with the HRF defined by
 			self.basis_f().
 		"""
-		from simfMRI.dm import dm_construct
+		from simfMRI.dm import construct
 		
-		dmc = getattr(name,dm_construct)
-		self.dm = dmc(self)
-		
+		self.dm = getattr(construct,name)(self)
 		if convolve:
 			self.dm = self.convolve_hrf(self.dm)
 	
 	
-	def create_bold(self,arr):
+	def create_bold(self,arr,convolve=True):
 		""" The provided <arr>ay becomes a (noisy) bold signal. """
 		
-		bold += self.noise_f(len(arr))
-		self.bold = self.convolve_hrf(bold)
-	
+		self.bold = np.array(arr)
+		self.bold += self.noise_f(self.bold.shape[0])
+		if convolve:
+			self.bold = self.convolve_hrf(self.bold)
+		
 	
 	def _reformat_model(self):
 		"""
-		Use save_to_results() to store the simulation's state.*
+		Use save_state() to store the simulation's state.*
 		
 		This private method just extracts relevant data from the regression
 		model object into a dict.
 		"""
+		tosave = {
+			'beta':'params',
+			't':'tvalues',
+			'fvalue':'fvalue',
+			'p':'pvalues',
+			'r':'rsquared',
+			'ci':'conf_int',
+			'resid':'resid',
+			'aic':'aic',
+			'bic':'bic',
+			'llf':'llf',
+			'mse_model':'mse_model',
+			'mse_resid':'mse_resid',
+			'mse_total':'mse_total',
+			'pretty_summary':'summary'
+		}
 		
-		model_results = {}
-		model_results['beta'] = self.model.params
-		model_results['t'] = self.model.tvalues
-		model_results['fvalue'] = self.model.fvalue
-		model_results['p'] = self.model.pvalues
-		model_results['r'] = self.model.rsquared
-		model_results['ci'] = self.model.conf_int()
-		model_results['resid'] = self.model.resid
-		model_results['aic'] = self.model.aic
-		model_results['bic'] = self.model.bic
-		model_results['llf'] = self.model.llf
-		model_results['mse_model'] = self.model.mse_model
-		model_results['mse_resid'] = self.model.mse_resid
-		model_results['mse_total'] = self.model.mse_total
-		model_results['pretty_summary'] = self.model.summary()
-		
+		# Try to get each attr (a value in the dict above)
+		# first as function (without args) then as a regular
+		# attribute.  If both fail, silently move on.
+		model_results = {}		
+		for k,v in tosave.items():
+			try:
+				model_results[k] = getattr(self.model,v)()
+			except TypeError:
+				model_results[k] = getattr(self.model,v)
+			except AttributeError:
+				continue
+			
 		return model_results
 	
 	
-	def save_to_results(self,name=''):
+	def save_state(self,name):
 		"""
 		Saves most of the state of the current simulation to results, keyed
 		on <name>.  Saves greedily, trading storage space for security and
 		redundancy.
 		"""
-		# Global, model indepdnet, results fisrt
-		self.results['TR'] = self.TR
-		self.results['ISI'] = self.ISI
-		self.results['trials'] = self.trials
 		
-		# Now the data
+		tosave = {
+			'TR':'TR',
+			'ISI':'ISI',
+			'trials':'trials',
+			'data':'data',
+			'dm':'dm',
+			'bold':'bold'
+		}
+			## This list is only for attr hung directly off
+			## of self.
+
+		# Add a name to results
 		self.results[name] = {}
-		self.results[name]['data'] = self.data
-		self.results[name]['dm'] = self.dm
-		self.results[name]['bold'] = self.bold
 		
-		# And finally the regression model
-		model_dict = self._reformat_model()
-		for k,v in model_dict.items():
-			self.results[name][k] = v
+		# Try to get each attr (a value in the dict above)
+		# first as function (without args) then as a regular
+		# attribute.  If both fail, silently move on.
+		for k,v in tosave.items():
+			try:
+				self.results[name][k] = getattr(self,v)()
+			except TypeError:
+				self.results[name][k] = getattr(self,v)
+			except AttributeError:
+					continue
+		
+		# Now add the reformatted data from the current model,
+		# if any.
+		self.results[name].update(self._reformat_model()) 
 	
 	
 	def fit(self):
@@ -164,8 +193,8 @@ class ERfMRI():
 		#
 		# Dummy is added at the last minute so it does not
 		# interact with normalization or smooithng routines.
-		dummy = np.array([1]*self.dm.shape[0])
-		dm_dummy = np.vstack((self.dm, dummy))
+		dm_dummy = np.ones((self.dm.shape[0],self.dm.shape[1]+1))
+		dm_dummy[0:self.dm.shape[0],0:self.dm.shape[1]] = self.dm
 		
 		self.model = GLS(self.bold,dm_dummy).fit()
 	
@@ -189,10 +218,10 @@ class ERfMRI():
 	def model_1(self):
 		""" A very simple example model. """
 		
-		from simfMRI.dm import dm_construct
+		from simfMRI.dm import construct
 		
 		self.create_dm('boxcar',True)
-		self.create_bold(self.dm[:,1])
+		self.create_bold(self.dm[:,1],False)
 		
 		self.dm = self.normalize_f(self.dm)
 		self.bold = self.normalize_f(self.bold)
@@ -223,7 +252,7 @@ class ERfMRI():
 				if (a_s[0] == 'model') and (re.match('\A\d+\Z',a_s[1])):
 					amodel = getattr(self,a)
 					amodel()
-					self.save_to_results(name=a)
+					self.save_state(name=a)
 		
 		return self.results
 		

@@ -20,7 +20,7 @@ def preturb_double_gamma(fraction,width,TR):
 		## Grab a random value from the normal curve
 		## with its SD reduced by 0.fraction
 	
-	params('width') = width
+	params['width'] = width
 	params['TR'] = TR
 		## Add the remaining (unpreturbed) params
 	

@@ -3,11 +3,12 @@
 import numpy as mp
 from collections import defaultdict
 
-class ReduceER(results):
-	""" A reducer class for ERfMRI. """
-	def ___init___(self):
+class ReduceER():
+	""" A reducer class for Exp. """
+	def __init__(self,results):
 		# Create a reduced version of the results keys
 		self.reduced_results = {}
+		self.results = results
 		pass
 	
 	def reduce():

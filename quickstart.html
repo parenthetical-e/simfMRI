@@ -26,8 +26,8 @@ np.random.shuffle(trials)
 
 <p>Now import the simfMRI module and create an instance using the simulated trials we just made. We have no data for parametric models (so data = {}, an empty dictionary, and both the ISI and TR are 2 seconds).</p>
 
-<pre><code>from simfMRI import base.ERfMRI
-expi = ERfMRI(trials=trials,data={},TR=2,ISI=2)
+<pre><code>from simfMRI import base.Exp
+expi = Exp(trials=trials,data={},TR=2,ISI=2)
 </code></pre>
 
 <p>Finally run the experiment.</p>
@@ -38,7 +38,7 @@ expi = ERfMRI(trials=trials,data={},TR=2,ISI=2)
 <p>Or if you want to run 100 iterations with different simulated trials for each you would do:</p>
 
 <pre><code>import numpy as np
-from simfMRI import base.ERfMRI
+from simfMRI import base.Exp
 
 # Were going to make a list of results.
 results = []
@@ -46,7 +46,7 @@ for i in range(100):
     trials = np.array([0,]*60 + [1,]*60)
     trials = np.random.shuffle(trials)
 
-    expi = ERfMRI(trials=trials,data={},TR=2,ISI=2)
+    expi = Exp(trials=trials,data={},TR=2,ISI=2)
     results.append(expi.run(i))
         ## The loop counter is used to 
         ## give each iteration a unique name

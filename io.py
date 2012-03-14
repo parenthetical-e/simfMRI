@@ -1,4 +1,4 @@
-""" Functions for reading and writing of ERfMRI results """
+""" Functions for reading and writing of Exp results """
 
 def write_hdf(map_results_list):
 	""" 

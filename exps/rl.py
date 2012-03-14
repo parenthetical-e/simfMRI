@@ -6,7 +6,7 @@ import rl
 
 from simfMRI.base import Fmri
 
-class RW(ERfMRI):
+class RW(Exp):
 	""" 
 	Generate and fit behavioral data with a Rescorla-Wagner RL model. 
 	Use these to run a series of fMRI simulations  This class defines a 
@@ -14,7 +14,7 @@ class RW(ERfMRI):
 	experiment.
 	"""
 	def __init__(behave='learn'):
-		ERfMRI.__init__(self,trials=[],data={},TR=2,ISI=2)
+		Exp.__init__(self,trials=[],data={},TR=2,ISI=2)
 		
 		n_cond = 1
 		n_trials_cond = 60

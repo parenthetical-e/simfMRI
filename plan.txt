@@ -1,4 +1,4 @@
-ERfMRI defines the template class, to run an experiment subclass it.
+Exp defines the template class, to run an experiment subclass it.
 
 I took the class/subclass approach to maximize flexibility,readability and maintainability at the cost of possible confusion for non-programmers.
   

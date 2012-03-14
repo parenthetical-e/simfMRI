@@ -9,8 +9,12 @@ def design_matrix(trials=[],impulses=None):
 	the elements in <impulses>.
 	"""
 	import numpy as np
-
-	cond_levels = sort(list(set(trials))) 
+	
+	if impulses == None:
+		impulses = [1,] * len(trials)
+	
+	cond_levels = list(set(trials))
+	cond_levels.sort()
 		## Find and sort unique trials, aka condition levels
 		
 	trials = np.array(trials) 
@@ -21,16 +25,14 @@ def design_matrix(trials=[],impulses=None):
 
 	# Gen the impulse and hrf convolved
 	# dm and row-wise truncate the latter.
-	dm = np.zeros(trials.shape[0],len(cond_levels))
-	if impulses == None:
-		impulses = [1,] * len(trials)
+	dm = np.zeros((trials.shape[0],len(cond_levels)))
 	
 	for cond in cond_levels:
 		cond_mask = cond == trials
 		if (cond == 0) or (cond == '0'):
-			dm[cond,cond_mask] = 1
+			dm[cond_mask,cond] = 1
 				## Cond 0 is ALWAYS baseline and is ALWAYS 1
 		else:
-			dm[cond,cond_mask] = impulses[cond_mask]
+			dm[cond_mask,cond] = impulses[cond_mask]
 	
 	return dm

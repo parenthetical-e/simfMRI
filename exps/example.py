@@ -1,7 +1,7 @@
 import simfMRI
-from simfMRI.base import ERfMRI
+from simfMRI.base import Exp
 
-class TwoCond(ERfMRI):
+class TwoCond(Exp):
 	"""
 	Simulate two conditions suing one then the other as the BOLD signal
 	"""

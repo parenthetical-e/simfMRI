@@ -1,7 +1,11 @@
-__all__ = ['base','hrf','norm','misc']
+__all__ = ['base','hrf','norm','misc','noise','hadoop','io']
 
 import base
 import hrf
 import misc
 import norm
-import fmri_reduced
+import noise
+import hadoop
+import io
+import dm
+import exps
