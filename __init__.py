@@ -1,6 +1,6 @@
-__all__ = ['base','hrf','norm','misc','noise','hadoop','io']
+__all__ = ['template','hrf','norm','misc','noise','hadoop','io']
 
-import base
+import template
 import hrf
 import misc
 import norm

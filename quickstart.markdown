@@ -1,62 +1,60 @@
 # A HOWTO #
 
+ 0. Install and dependencies
  1. A Really Simple Example
  2. A Simple Subclass Example
  3. An Example Using the Command Line
  4. Running the Rescorla-Wagner Code
 
+## Install and dependencies ##
+
+
 ## A Really Simple Example. ##
 
 Let's just get to it.  Start iPython.
 
-First we need to make some simulated trials. Let's say the experiment we want to model had only one condition, excluding the baseline, with 60 trials.  Further let's assume that there are equal numbers of experimental and baseline trials and that the experimental conditions were randomly interspersed.
+Every experiment is in a class by itself.  Each though is based off of a common template.  Here is a Simple example, a 1 condition (with 60 trials) simulation run 1000 iterations.  Each iteration returns a results dictionary which is added a to list (called res).
+		
+	res = [simfMRI.exps.examples.Simple(60).run(str(ii)) 
+			for ii in range(1000)]
 
-First we need numpy.
-	
-	import numpy as np
+So what happened?  Let's walk through Simple (and its template).
 
-Now make 60 baseline (0) and experimental trials (1) then randomize their order.
+	class Simple(Exp):
+		""" Run <n> one condition experiments. Return a list of results. """
+		def __init__(self,n):
+			try: Exp.__init__(self)
+			except AttributeError: pass
+		
+			self.trials = np.array([0,]*n + [1,]*n)
+			np.random.shuffle(self.trials)
 
-	trials = np.array([0,]*60 + [1,]*60)
-	np.random.shuffle(trials) 
-		## done in place
+		def model_1(self):
+			""" A very simple example model. """
 
-Now import the simfMRI module and create an instance using the simulated trials we just made.  We have no data for parametric models (so data = {}, an empty dictionary, and both the ISI and TR are 2 seconds).
+			from simfMRI.dm import construct
 
-	# Exp is a class, so we need to
-	# make an experimental instance (called expi).
-	from simfMRI.base import Exp
-	
-	expi = Exp(trials=trials,data={},TR=2,ISI=2)
+			self.create_dm('boxcar',True)
+			self.create_bold(self.dm[:,1],False)
 
-Then just run the experiment.
-	
-	results = expi.run('test')
+			self.dm = self.normalize_f(self.dm)
+			self.bold = self.normalize_f(self.bold)
 
-Or if you want to run 100 iterations with different simulated trial structure for each, do:
+			self.fit()
 
-(Note: there are other ways to do this, see 2. and 3. below.)
+The template class is Exp (found in simfMRI.template). 
 
-	import numpy as np
-	from simfMRI import base.Exp
+[TODO] Discuss the template and its relevant attributes.  The move onto .run() and what it does, finally move onto model\_1() and the model\_N magic.
 
-	trials = np.array([0,]*60 + [1,]*60)	
-	
-	# Were going to make a list of results.
-	results = []
-	
-	for i in range(100):
-		np.random.shuffle(trials)
-		expi = Exp(trials=trials,data={},TR=2,ISI=2)
-		results.append(expi.run(i))
-			## The loop counter is used to 
-			## give each iteration a unique name
+...
 
-Store these results to disk in one big hdf5 file named "example_results.hdf5".  
+Then we needed to make some simulated trials. Let's say the experiment we want to model had only one condition, excluding the baseline, with 60 trials.  Further let's assume that there are equal numbers of experimental and baseline trials and that the experimental conditions were randomly interspersed.
 
-	simfMRI.io.write_HDF('example_results.hdf5',results)
+To store these results to disk, I recommend using the hdf format.  It is fast, widely supported, and allows for slicing without loading the whole file into memory. We'll fittingly call it "simple.hdf5".  
 
-The structure of the results dictionary is exactly mirrored in the hdf5 file.  To learn this structure, just play with a results object for a bit.  It should be straight forward.
+	simfMRI.io.write_HDF(results,'simple.hdf5')
+
+The structure of the results is mirrored in the hdf5 file.  To learn this structure, just play with a results object for a bit.  It should be straight forward.
 
 To plot a histogram of each of the predictor's t-values, do:
 
@@ -64,11 +62,9 @@ To plot a histogram of each of the predictor's t-values, do:
 
 Check out the other plot methods too.
 
-And that is it... err, no...  
+And that is it... See the next section for a more practical example. There we'll define some new models.
 
-See the next section for a more practical example.
-
-## A Simple Subclass Example ##
+## A TwoCond Example ##
 
 TODO
 

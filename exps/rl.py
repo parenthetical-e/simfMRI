@@ -1,20 +1,18 @@
 import numpy as np
-
 import simfMRI
 import simBehave
 import rl
-
-from simfMRI.base import Fmri
+from simfMRI.exps.basic import Exp
 
 class RW(Exp):
-	""" 
+	"""
 	Generate and fit behavioral data with a Rescorla-Wagner RL model. 
 	Use these to run a series of fMRI simulations  This class defines a 
 	single experiment.  Many models may be examined inside a single 
 	experiment.
 	"""
 	def __init__(behave='learn'):
-		Exp.__init__(self,trials=[],data={},TR=2,ISI=2)
+		Exp.__init__(self,TR=2,ISI=2)
 		
 		n_cond = 1
 		n_trials_cond = 60

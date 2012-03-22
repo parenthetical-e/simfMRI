@@ -5,25 +5,20 @@ from collections import defaultdict
 
 import simfMRI
 
-# fmri
-# - convert trial/states/etc - preprocess, make dms
-# - define BOLD, add noise
-# - do regressions
-
 class Exp():
 	"""
 	A template class for running easily parallelizable event-related fMRI
 	experimental simulations.
 	"""
 	
-	def __init__(self,trials=[],data={},TR=2,ISI=2):
-		import simfMRI
+	def __init__(self,TR=2,ISI=2):
 		
 		# Set up user variables
 		self.TR = TR
 		self.ISI = ISI
-		self.trials = trials
-		self.data = data
+		
+		self.trials = None
+		self.data = None
 		
 		# Intialize simulation data structues
 		self.dm = None
@@ -100,14 +95,14 @@ class Exp():
 			self.dm = self.convolve_hrf(self.dm)
 	
 	
-	def create_bold(self,arr,convolve=True):
+	def create_bold(self,arr,convolve=False):
 		""" The provided <arr>ay becomes a (noisy) bold signal. """
 		
 		self.bold = np.array(arr)
 		self.bold += self.noise_f(self.bold.shape[0])
 		if convolve:
 			self.bold = self.convolve_hrf(self.bold)
-		
+	
 	
 	def _reformat_model(self):
 		"""
@@ -136,7 +131,7 @@ class Exp():
 		# Try to get each attr (a value in the dict above)
 		# first as function (without args) then as a regular
 		# attribute.  If both fail, silently move on.
-		model_results = {}		
+		model_results = {}
 		for k,v in tosave.items():
 			try:
 				model_results[k] = getattr(self.model,v)()
@@ -144,7 +139,7 @@ class Exp():
 				model_results[k] = getattr(self.model,v)
 			except AttributeError:
 				continue
-			
+		
 		return model_results
 	
 	
@@ -165,7 +160,7 @@ class Exp():
 		}
 			## This list is only for attr hung directly off
 			## of self.
-
+		
 		# Add a name to results
 		self.results[name] = {}
 		
@@ -182,7 +177,7 @@ class Exp():
 		
 		# Now add the reformatted data from the current model,
 		# if any.
-		self.results[name].update(self._reformat_model()) 
+		self.results[name].update(self._reformat_model())
 	
 	
 	def fit(self):
@@ -215,27 +210,13 @@ class Exp():
 		return t, p
 	
 	
-	def model_1(self):
-		""" A very simple example model. """
-		
-		from simfMRI.dm import construct
-		
-		self.create_dm('boxcar',True)
-		self.create_bold(self.dm[:,1],False)
-		
-		self.dm = self.normalize_f(self.dm)
-		self.bold = self.normalize_f(self.bold)
-		
-		self.fit()
-	
-	
 	def run(self,code):
 		"""
 		Run all defined models in order, returning their tabulated results.
 		
 		<code> - the unique batch or run code for this experiment.
 		
-		Models are any attribute of the form 'model_N' where N is an
+		Models are any method of the form 'model_N' where N is an
 		integer (e.g. model_2, model_1012 or model_666).  Models take no
 		arguments.
 		"""
@@ -248,10 +229,13 @@ class Exp():
 		
 		for a in all_attr:
 			a_s = re.split('_',a)
+			
+			# Match only model_N where N is an integer
 			if len(a_s) == 2:
 				if (a_s[0] == 'model') and (re.match('\A\d+\Z',a_s[1])):
-					amodel = getattr(self,a)
-					amodel()
+					# Now call the model and
+					# save its results.
+					getattr(self,a)()
 					self.save_state(name=a)
 		
 		return self.results

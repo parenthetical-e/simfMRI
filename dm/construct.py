@@ -1,4 +1,4 @@
-""" Custom private design matrix constructors """
+""" Custom design matrix constructors """
 import numpy as np
 import simfMRI
 from simfMRI.dm.base import design_matrix
@@ -9,7 +9,7 @@ def boxcar(self):
 
 
 # =========
-# for rl.RW
+# for simfMRI.exps.rl.RW
 # =========
 def	base_box_acc(self):
 	dm_box = design_matrix(self.trials,None)
