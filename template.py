@@ -18,8 +18,10 @@ class Exp():
 		self.ISI = ISI
 		
 		self.trials = None
-		self.data = None
-		
+		self.data = {}
+		self.data['meta'] = {}
+			## meta is for model metadata
+
 		# Intialize simulation data structues
 		self.dm = None
 		self.bold = None
@@ -36,6 +38,7 @@ class Exp():
 		# Move from ISI to ITI time, if needed.
 		if (self.ISI % self.TR) > 0.0:
 			raise ValueError('ISI must a even multiple of the TR.')
+		
 		elif self.ISI > self.TR:
 			# Use multplier to transform data and trials into units
 			# of TR from their native ISI.
@@ -67,7 +70,7 @@ class Exp():
 		
 		arr = np.asarray(arr)
 		arr_c = np.zeros_like(arr)
-			#@ Where the convolved data goes
+			## Where the convolved data goes
 		
 		# Assume 2d (or really N > 1 d), fall back to 1d.
 		try:
@@ -96,9 +99,22 @@ class Exp():
 	
 	
 	def create_bold(self,arr,convolve=False):
-		""" The provided <arr>ay becomes a (noisy) bold signal. """
+		""" 
+		The provided <arr>ay becomes a noisy bold signal. 
 		
-		self.bold = np.array(arr)
+		<convolve> - if True, the dm is convolved with the HRF defined by
+		self.basis_f().
+		"""
+		
+		arr = np.array(arr)
+		try:
+			self.bold = arr.sum(1)
+				## Average by col, arr might 
+				## have been 2d, need 1d.
+		except ValueError:
+			self.bold = arr
+			
+		
 		self.bold += self.noise_f(self.bold.shape[0])
 		if convolve:
 			self.bold = self.convolve_hrf(self.bold)
@@ -106,11 +122,13 @@ class Exp():
 	
 	def _reformat_model(self):
 		"""
-		Use save_state() to store the simulation's state.*
+		Use save_state() to store the simulation's state.
 		
 		This private method just extracts relevant data from the regression
-		model object into a dict.
+		model into a dict.
 		"""
+		from copy import deepcopy
+
 		tosave = {
 			'beta':'params',
 			't':'tvalues',
@@ -134,9 +152,9 @@ class Exp():
 		model_results = {}
 		for k,v in tosave.items():
 			try:
-				model_results[k] = getattr(self.model,v)()
+				model_results[k] = deepcopy(getattr(self.model,v)())
 			except TypeError:
-				model_results[k] = getattr(self.model,v)
+				model_results[k] = deepcopy(getattr(self.model,v))
 			except AttributeError:
 				continue
 		
@@ -149,7 +167,8 @@ class Exp():
 		on <name>.  Saves greedily, trading storage space for security and
 		redundancy.
 		"""
-		
+		from copy import deepcopy
+
 		tosave = {
 			'TR':'TR',
 			'ISI':'ISI',
@@ -169,9 +188,9 @@ class Exp():
 		# attribute.  If both fail, silently move on.
 		for k,v in tosave.items():
 			try:
-				self.results[name][k] = getattr(self,v)()
+				self.results[name][k] = deepcopy(getattr(self,v)())
 			except TypeError:
-				self.results[name][k] = getattr(self,v)
+				self.results[name][k] = deepcopy(getattr(self,v))
 			except AttributeError:
 					continue
 		
@@ -226,15 +245,22 @@ class Exp():
 		# find all self.model_N attritubes and run them.
 		all_attr = dir(self)
 		all_attr.sort()
-		
+		past_models = []
 		for a in all_attr:
 			a_s = re.split('_',a)
 			
 			# Match only model_N where N is an integer
 			if len(a_s) == 2:
 				if (a_s[0] == 'model') and (re.match('\A\d+\Z',a_s[1])):
+					
+					# Model name must be unique.
+					if a in past_models:
+						raise AttributeError('{0} was not unique.'.format(a))
+					past_models.append(a)
+
 					# Now call the model and
 					# save its results.
+					print('Fitting {0}.'.format(a))
 					getattr(self,a)()
 					self.save_state(name=a)
 		

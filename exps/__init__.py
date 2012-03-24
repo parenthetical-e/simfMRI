@@ -1,5 +1,4 @@
-__all__ = ['basic','examples','rl']
+__all__ = ['examples','rlearn']
 
-import basic
 import examples
-import rl
+import rlearn

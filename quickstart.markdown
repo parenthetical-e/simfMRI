@@ -58,7 +58,7 @@ The structure of the results is mirrored in the hdf5 file.  To learn this struct
 
 To plot a histogram of each of the predictor's t-values, do:
 
-	simfMRI.plot.hist_t(results)
+	simfMRI.analysis.plot.hist_t(results)
 
 Check out the other plot methods too.
 

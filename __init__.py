@@ -1,11 +1,12 @@
-__all__ = ['template','hrf','norm','misc','noise','hadoop','io']
+__all__ = ['template','hrf','norm','misc','noise','mapreduce','io','analysis']
 
 import template
 import hrf
 import misc
 import norm
 import noise
-import hadoop
+import mapreduce
 import io
 import dm
 import exps
+import analysis
