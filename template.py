@@ -8,7 +8,7 @@ import simfMRI
 class Exp():
 	"""
 	A template class for running easily parallelizable event-related fMRI
-	experimental simulations.
+	simulations.
 	"""
 	
 	def __init__(self,TR=2,ISI=2):

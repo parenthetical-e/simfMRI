@@ -1,4 +1,4 @@
-"""Routines to normalize 1d and 2d array-like objects. """
+""" Routines to normalize 1d and 2d array-like objects. """
 import numpy as np
 
 def zscore(arr):
