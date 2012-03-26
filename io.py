@@ -33,9 +33,9 @@ def write_hdf(results,name):
 	f = h5py.File(name,'w')
 	for ii,r in enumerate(results):
 		# Create a top level group for each r
-		# in results.  The recursively walk
-		# to the bottom of r.  Anything that 
-		# is not a dict is assumed to be data.		
+		# in results.  Then recursively walk r.
+		# Anything that is not a dict is 
+		# assumed to be data.		
 		fg_ii = f.create_group(str(ii))
 		_walk(r,fg_ii)
 	
@@ -67,4 +67,16 @@ def read_hdf_inc(hdf,path='/model_01/t'):
 
 	for node in f.keys():
 		yield f[node+path].value
+
+
+def get_model_meta(hdf,model):
+	""" Get the BOLD and DM metadata for <model> from <hdf> """
+
+	f = h5py.File(hdf,'r')
+
+	meta = {}
+	meta['bold'] = f['/0/'+ model +'/data/meta/bold'].value
+	meta['dm'] = f['/0/'+ model +'/data/meta/dm'].value.tolist()
+
+	return meta
 

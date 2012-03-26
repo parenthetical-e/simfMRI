@@ -1,8 +1,58 @@
-def hist_t(hdf,model_name):
-	import bigdata as bd
-	
-	pass
+import numpy as np
+import itertools
+import matplotlib.pyplot as plt
 
+from bigstats.hist import RHist
+from simfMRI.io import read_hdf_inc, get_model_meta
+
+def hist_t(hdf,model):
+	
+	meta = get_model_meta(hdf,model)
+
+	hist_list = []
+	for dm_col in meta['dm']:
+		# Make an instance RHist for the list.
+		hist = RHist(name=dm_col,decimals=1)
+		hist_list.append(hist)
+	
+	# read_hdf_inc returns a generator so....
+	#import pdb; pdb.set_trace()
+	tdata = read_hdf_inc(hdf,'/'+ model + '/t')
+	for ts in tdata:
+		# get the tvals for each instance of model
+		# and add them to the appropraite hist,
+		# in the list, we made right up above.
+		[hist_list[ii].incr(ts[ii]) for ii in range(len(ts)-1)]
+			## The last t in ts is the constant, which we 
+			## do not want to plot.
+
+	# Create a fig the loop over the hist_list
+	# plotting each on the same fig.axes (0).
+	fig = plt.figure()
+	fig.add_subplot(111)
+	colors = itertools.cycle(
+				['DarkGray', 'DarkBlue', 'DarkGreen', 'MediumSeaGreen'])
+		## Using html colors...
+	[h.plot(fig=fig,color=colors.next(),norm=True) for h in hist_list]
+		## Don't plot the const
+	
+	# Prettify the plot
+	ax = fig.axes[0]
+	ax.set_xlabel('t-values')
+	ax.set_ylabel('P(t)')
+
+	# Add vetical lines representing significance tresholds
+	ax.axvline(x=1.7822,label='p < 0.05',color='red',linewidth=4)
+	ax.axvline(x=2.6810,label='p < 0.01',color='red',linewidth=3)
+	ax.axvline(x=3.0545,label='p < 0.005',color='red',linewidth=2)
+	ax.axvline(x=4.3178,label='p < 0.0005',color='red',linewidth=1)
+		## tvals above assume N=12 subjects
+
+	plt.xlim(-10,15)
+	plt.legend()
+	plt.title('{0} -- BOLD: {1}'.format(model,meta['bold']))
+
+	# TODO Add legend, colors, whatever else
 
 # FROM MASTER:
 # """ A set of plotting routines for simfMRI.exp results objects"""

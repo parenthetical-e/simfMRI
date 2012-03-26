@@ -45,10 +45,10 @@ class RW(Exp):
 
 	# DEFINE ALL MODELS:
 	def model_01(self):
-		self.data['meta']['bold'] = 'condition 1'
 		self.data['meta']['dm'] = ('baseline','condition 1')
-
 		self.create_dm('boxcar',True)
+		
+		self.data['meta']['bold'] = 'condition 1'
 		self.create_bold(self.dm[:,1],False)
 
 		self.dm = self.normalize_f(self.dm)
@@ -58,10 +58,10 @@ class RW(Exp):
 		
 	
 	def model_02(self):
-		self.data['meta']['bold'] = 'condition 1'
 		self.data['meta']['dm'] = ('baseline','condition 1','acc')
-
 		self.create_dm('base_box_acc',True)
+
+		self.data['meta']['bold'] = 'condition 1'
 		self.create_bold(self.dm[:,1],False)
 
 		self.dm = self.normalize_f(self.dm)
@@ -71,10 +71,10 @@ class RW(Exp):
 
 
 	def model_03(self):
-		self.data['meta']['bold'] = 'condition 1'
 		self.data['meta']['dm'] = ('baseline','condition 1','value')
-
 		self.create_dm('base_box_value',True)
+		
+		self.data['meta']['bold'] = 'condition 1'
 		self.create_bold(self.dm[:,1],False)
 
 		self.dm = self.normalize_f(self.dm)
@@ -84,10 +84,10 @@ class RW(Exp):
 
 	
 	def model_04(self):
-		self.data['meta']['bold'] = 'condition 1'
 		self.data['meta']['dm'] = ('baseline','condition 1','rpe')
-		
 		self.create_dm('base_box_rpe',True)
+
+		self.data['meta']['bold'] = 'condition 1'
 		self.create_bold(self.dm[:,1],False)
 
 		self.dm = self.normalize_f(self.dm)
@@ -97,10 +97,10 @@ class RW(Exp):
 
 
 	def model_05(self):
-		self.data['meta']['bold'] = 'condition 1'
 		self.data['meta']['dm'] = ('baseline','condition 1','rand')
-		
 		self.create_dm('base_box_rand',True)
+
+		self.data['meta']['bold'] = 'condition 1'
 		self.create_bold(self.dm[:,1],False)
 
 		self.dm = self.normalize_f(self.dm)
@@ -109,12 +109,11 @@ class RW(Exp):
 		self.fit()
 
 
-	def model_06(self):
-		self.data['meta']['bold'] = 'acc'
+	def model_06(self):		
 		self.data['meta']['dm'] = ('baseline','condition 1','value')
-
 		self.create_dm('base_box_value',True)
 		
+		self.data['meta']['bold'] = 'acc'
 		self.create_bold(self.convolve_hrf(self.data['acc']),False)
 
 		self.dm = self.normalize_f(self.dm)
@@ -124,11 +123,10 @@ class RW(Exp):
 
 
 	def model_07(self):
-		self.data['meta']['bold'] = 'acc'
 		self.data['meta']['dm'] = ('baseline','condition 1','rpe')
-	
 		self.create_dm('base_box_rpe',True)
 		
+		self.data['meta']['bold'] = 'acc'
 		self.create_bold(self.convolve_hrf(self.data['acc']),False)
 	
 		self.dm = self.normalize_f(self.dm)
@@ -138,11 +136,10 @@ class RW(Exp):
 	
 	
 	def model_08(self):
-		self.data['meta']['bold'] = 'acc'
 		self.data['meta']['dm'] = ('baseline','condition 1','rand')
-	
 		self.create_dm('base_box_rand',True)
 		
+		self.data['meta']['bold'] = 'acc'
 		self.create_bold(self.convolve_hrf(self.data['acc']),False)
 	
 		self.dm = self.normalize_f(self.dm)
@@ -152,11 +149,10 @@ class RW(Exp):
 	
 	
 	def model_09(self):
-		self.data['meta']['bold'] = 'value'
 		self.data['meta']['dm'] = ('baseline','condition 1','rpe')
-	
 		self.create_dm('base_box_rpe',True)
 		
+		self.data['meta']['bold'] = 'value'
 		self.create_bold(self.convolve_hrf(self.data['value']),False)
 	
 		self.dm = self.normalize_f(self.dm)
@@ -164,13 +160,25 @@ class RW(Exp):
 	
 		self.fit()
 	
-	
-	def model_10(self):
-		self.data['meta']['bold'] = 'rpe'
+
+	def model_091(self):
 		self.data['meta']['dm'] = ('baseline','condition 1','value')
-	
 		self.create_dm('base_box_value',True)
 		
+		self.data['meta']['bold'] = 'value'
+		self.create_bold(self.convolve_hrf(self.data['value']),False)
+	
+		self.dm = self.normalize_f(self.dm)
+		self.bold = self.normalize_f(self.bold)
+	
+		self.fit()
+
+
+	def model_10(self):
+		self.data['meta']['dm'] = ('baseline','condition 1','value')
+		self.create_dm('base_box_value',True)
+		
+		self.data['meta']['bold'] = 'rpe'
 		self.create_bold(self.convolve_hrf(self.data['rpe']),False)
 	
 		self.dm = self.normalize_f(self.dm)
@@ -179,12 +187,24 @@ class RW(Exp):
 		self.fit()
 	
 
-	def model_11(self):
-		self.data['meta']['bold'] = 'rand'
-		self.data['meta']['dm'] = ('baseline','condition 1','acc')
+	def model_101(self):
+		self.data['meta']['dm'] = ('baseline','condition 1','rpe')
+		self.create_dm('base_box_rpe',True)
+		
+		self.data['meta']['bold'] = 'rpe'
+		self.create_bold(self.convolve_hrf(self.data['rpe']),False)
+	
+		self.dm = self.normalize_f(self.dm)
+		self.bold = self.normalize_f(self.bold)
+	
+		self.fit()
 
+
+	def model_11(self):
+		self.data['meta']['dm'] = ('baseline','condition 1','acc')
 		self.create_dm('base_box_acc',True)
 		
+		self.data['meta']['bold'] = 'rand'
 		randarr = np.zeros(len(self.trials))
 		for ii,t in enumerate(self.trials):
 			if t >= 1: 
@@ -201,11 +221,10 @@ class RW(Exp):
 
 
 	def model_12(self):
-		self.data['meta']['bold'] = 'rand'
 		self.data['meta']['dm'] = ('baseline','condition 1','value')
-
 		self.create_dm('base_box_value',True)
 
+		self.data['meta']['bold'] = 'rand'
 		randarr = np.zeros(len(self.trials))
 		for ii,t in enumerate(self.trials):
 			if t >= 1: 
@@ -222,11 +241,10 @@ class RW(Exp):
 
 
 	def model_13(self):
-		self.data['meta']['bold'] = 'rand'
 		self.data['meta']['dm'] = ('baseline','condition 1','rpe')
-
 		self.create_dm('base_box_rpe',True)
 
+		self.data['meta']['bold'] = 'rand'
 		randarr = np.zeros(len(self.trials))
 		for ii,t in enumerate(self.trials):
 			if t >= 1: 
