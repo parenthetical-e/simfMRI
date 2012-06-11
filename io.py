@@ -25,7 +25,7 @@ def _walk(d,hdf):
 
 def write_hdf(results,name):
 	""" 
-	Iterate over the results list, mimicking the hierarchical structure of 
+	Iterate over the <results> list, mimicking the hierarchical structure of 
 	each entry.  Name the resulting file <name>.
 	"""
 	from simfMRI.io import _walk
