@@ -4,6 +4,7 @@ from simfMRI.examples import Simple
 from simfMRI.io import write_hdf
 from simfMRI.analysis.plot import hist_t
 
+
 def main((name, TR, ISI)):
     """ Does all the work. """
     
@@ -22,11 +23,11 @@ if __name__ == "__main__":
     results = map(main, zip(range(nrun), [TR, ]*nrun, [ISI, ]*nrun))
         ## map(...) yields (name, tr, isi)
 
-    results_name = "simple_{0}".format(nrun)
+    results_name = "simple{0}".format(nrun)
     
     print("Writing results to disk.")    
     write_hdf(results, results_name+".hdf5")
     
     print("Plotting results.")
-    hist_t('simple_100.hdf5', 'model_01', results_name)
+    hist_t(results_name+".hdf5", 'model_01', results_name)
 
