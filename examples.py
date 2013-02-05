@@ -1,33 +1,35 @@
+""" Examples of how to subclass simfMRI.template.* classes. """
 import simfMRI
 import numpy as np
 from simfMRI.template import Exp
 
+
 class Simple(Exp):
     """ Run <n> one condition experiments. Return a list of results. """
-    def __init__(self,n):
-        try: Exp.__init__(self)
-        except AttributeError: pass
+    def __init__(self, n, TR=2, ISI=2):
+        try: 
+            Exp.__init__(self, TR=2, ISI=2)
+        except AttributeError: 
+            pass
         
         self.trials = np.array([0,]*n + [1,]*n)
+        self.durations = [1, ] * len(self.trials)
+        
         np.random.shuffle(self.trials)
     
     
     def model_01(self):
         """ BOLD: condition 1 """
-        from simfMRI.dm import construct
 
         # Add some meta data describing the model...
         self.data['meta']['bold'] = 'condition 1'
-        self.data['meta']['dm'] = ('baseline','condition 1')
+        self.data['meta']['dm'] = ('baseline', 'condition 1')
 
-        self.create_dm('boxcar',True)
-        self.create_bold(self.dm[:,1],False)
+        self.create_dm(drop=None, convolve=True)
+        self.create_bold(self.dm[:,1], convolve=False)
 
-        self.dm = self.normalize_f(self.dm)
-        self.bold = self.normalize_f(self.bold)
+        self.fit(norm='zscore')
 
-        self.fit()
-    
 
 class TwoCond(Exp):
     """
@@ -39,7 +41,7 @@ class TwoCond(Exp):
         from simBehave.trials import event_random
         
         # event_random(N,k,mult=1)
-        self.trials = event_random(2,60,1)
+        self.trials = event_random(2, 60, 1)
             ## 2 cond (+1 baseline), 60 trials per.
 
     
@@ -48,13 +50,7 @@ class TwoCond(Exp):
         self.data['meta']['bold'] = 'condition 1'
         self.data['meta']['dm'] = ('baseline','condition 1','condition 2')
 
-        self.create_dm('boxcar',True)
-        self.create_bold(self.dm[:,1])
-        
-        self.dm = self.normalize_f(self.dm)
-        self.bold = self.normalize_f(self.bold)
-        
-        self.fit()
+        pass
     
     
     def model_02(self):
@@ -62,13 +58,7 @@ class TwoCond(Exp):
         self.data['meta']['bold'] = 'condition 2'
         self.data['meta']['dm'] = ('baseline','condition 1','condition 2')
 
-        self.create_dm('boxcar',True)
-        self.create_bold(self.dm[:,2])
-        
-        self.dm = self.normalize_f(self.dm)
-        self.bold = self.normalize_f(self.bold)
-        
-        self.fit()
+        pass
     
     
     def model_03(self):
@@ -76,14 +66,8 @@ class TwoCond(Exp):
         self.data['meta']['bold'] = 'condition 1 + condition 2'
         self.data['meta']['dm'] = ('baseline','condition 1','condition 2')
 
-        self.create_dm('boxcar',True)
-        self.create_bold(self.dm[:,1:3])
-        
-        self.dm = self.normalize_f(self.dm)
-        self.bold = self.normalize_f(self.bold)
-        
-        self.fit()
-
+        pass
+  
 
 # # 2 conditiom, 60 trial per condition
 # if behave is 'random':

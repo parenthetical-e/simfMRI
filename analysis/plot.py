@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 from bigstats.hist import RHist
 from simfMRI.io import read_hdf_inc, get_model_meta
 
-def hist_t(hdf,model):
+def hist_t(hdf,model,name=None):
     """ 
     Plot histograms of the t values in <hdf> for each condition in 
-    <model> 
+    <model>.
+    
+    If <name> is not None the plot is saved as <name>.pdf.
     """
 
     meta = get_model_meta(hdf,model)
@@ -55,6 +57,10 @@ def hist_t(hdf,model):
     plt.title('{0} -- BOLD: {1}'.format(model,meta['bold']))
 
     # TODO Add legend, colors, whatever else
+
+    if name != None:
+        plt.savefig(name+".pdf")
+        
 
 # FROM MASTER:
 # """ A set of plotting routines for simfMRI.exp results objects"""
