@@ -1,5 +1,6 @@
 """ A top-level experimental script that run 100 iterations of 
 the Simple example (see simfMRI.examples.Simple()). """
+import os
 from simfMRI.examples import Simple
 from simfMRI.io import write_hdf
 from simfMRI.analysis.plot import hist_t
@@ -21,13 +22,17 @@ if __name__ == "__main__":
     nrun = 100
     
     results = map(main, zip(range(nrun), [TR, ]*nrun, [ISI, ]*nrun))
-        ## map(...) yields (name, tr, isi)
-
+        ## zip(...) yields (name, tr, isi) per iteration
+    
     results_name = "simple{0}".format(nrun)
     
     print("Writing results to disk.")    
-    write_hdf(results, results_name+".hdf5")
+    write_hdf(results, os.path.join("testdata", results_name+".hdf5"))
     
+    # Make a list of the models 
+    # to plot and plot them    
     print("Plotting results.")
-    hist_t(results_name+".hdf5", 'model_01', results_name)
+    hist_t(os.path.join("testdata", results_name+".hdf5"), 
+            'model_01', 
+            os.path.join("testdata", results_name))
 

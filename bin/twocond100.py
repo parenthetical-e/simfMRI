@@ -1,5 +1,6 @@
 """ A top-level experimental script that run 100 iterations of 
 the Simple example (see simfMRI.examples.Simple()). """
+import os
 from simfMRI.examples import TwoCond
 from simfMRI.io import write_hdf
 from simfMRI.analysis.plot import hist_t
@@ -26,10 +27,13 @@ if __name__ == "__main__":
     results_name = "twocond{0}".format(nrun)
     
     print("Writing results to disk.")    
-    write_hdf(results, results_name+".hdf5")
+    write_hdf(results, os.path.join("testdata", results_name+".hdf5"))
     
-    # Make a list of the models 
+    # Make a list of the models
     # to plot and plot them
     print("Plotting results.")
     models = ["model_01", "model_02", "model_03"]
-    [hist_t(results_name+".hdf5", mod, results_name+"_"+mod) for mod in models]
+    [hist_t(os.path.join(
+            "testdata", results_name+".hdf5"), mod, 
+            os.path.join("testdata",results_name+"_"+mod)) 
+                for mod in models]
