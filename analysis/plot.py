@@ -55,8 +55,6 @@ def hist_t(hdf,model,name=None):
     plt.legend()
     plt.title('{0} -- BOLD: {1}'.format(model,meta['bold']))
 
-    # TODO Add legend, colors, whatever else
-
     if name != None:
         plt.savefig(name+".pdf")
         

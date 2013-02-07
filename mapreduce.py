@@ -1,22 +1,26 @@
-""" Tools to allow simfMRI to be used in the Hadoop map-reduce framework. """
+""" Tools to allow simfMRI experiments to be used in the Hadoop 
+mapreduce-esque way. """
+import numpy as np
 
-import numpy as mp
-from collections import defaultdict
 
-class ReduceER():
-	""" A reducer class for Exp. """
-	def __init__(self,results):
-		# Create a reduced version of the results keys
-		self.reduced_results = {}
-		self.results = results
-		pass
-	
-	def reduce():
-		# TODO 
-		# For each value for each key in results 
-		# calculate M and Var (online), update N too.
-		# 
-		# Maintain the structure of results
-		# http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#cite_note-3		
-		pass
-	
+def create_chunks(nrun, ncore):
+    """ A mapper that divides <nrum> simulations into <ncore> pieces, 
+    returning a list of <ncore> lists, with <nrun> integers counting up
+    from 0 (starting in the first list).
+    
+    Note: <ncore> must evenly divide <nrun>. """
+    
+    if (nrun % ncore) == 0:
+        return np.arange(nrun).reshape(ncore, nrun/ncore).tolist()
+    else:
+        raise ValueError("<ncore> must evenly divide <nrun>.")
+
+
+def reduce_chunks(results_in_chunks):
+    """ Reduce <results_in_chunks> (a list of results lists from a parallel
+    run) to a flat list of results. """
+    
+    results = []
+    [results.extend(chunk) for chunk in results_in_chunks]
+    
+    return results

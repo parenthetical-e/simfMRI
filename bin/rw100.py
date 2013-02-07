@@ -20,7 +20,7 @@ def main(name, model_conf, TR, ISI):
 if __name__ == "__main__":
     TR = 2
     ISI = 2
-    nrun = 1
+    nrun = 100
     model_conf = "rw.ini"
     
     # Partial function application to setup main for easy

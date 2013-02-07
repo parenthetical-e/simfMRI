@@ -1,2 +1,2 @@
-Add auto corr noise
-Add dm phase
+* Add auto corr noise
+* Add dm phase

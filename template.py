@@ -44,7 +44,6 @@ class Exp():
         # Other needed functions you
         # might want to override
         self.noise_f = simfMRI.noise.white
-        self.hrf = simfMRI.hrf.double_gamma
         self.hrf_params = {"width":32,"TR":1,"a1":6.0,"a2":12.,
                 "b1":0.9,"b2":0.9,"c":0.35}
         self.hrf = simfMRI.hrf.double_gamma(**self.hrf_params)
@@ -58,12 +57,11 @@ class Exp():
         # --
         # and intialize the simulation"s (private) 
         # data structues
-        self.dm = None
-        self.bold = None
-        self.results = {}
-        self.glm = None
-            ## Where the GLM object is 
-            ## stored after a fit call
+        self.dm = None      ## The design matrix (create_dm, create_dm_param).
+        self.bold = None    ## The bold signal (create_bold).
+        self.results = {}   ## Simulation results go here.
+                            ## After a save_state() call.
+        self.glm = None     ## Where the GLM object is stored after a fit call.
         # --
         # ----
         
@@ -184,10 +182,9 @@ class Exp():
     
     def _reformat_model(self):
         """
-        Use save_state() to store the simulation"s state.
-        
-        This private method just extracts relevant data from the regression
-        model into a dict.
+        Use save_state() to store the simulation"s state. This private 
+        method just extracts relevant data from the regression model 
+        into a dict.
         """
 
         tosave = {
@@ -243,13 +240,16 @@ class Exp():
         
         Note: __doc__ for this function gets redone dynamically. """
         
-        self.data["meta"]["bold"] = bold
-        
+        self.data["meta"]["bold"] = deepcopy(bold)
+
+        # If were dealing with a parametric set
+        # and a univariate box is bieng used
         if dm_params.get("box"):
             self.data["meta"]["dm"] = ["baseline", "box"] + dm
         else:
+            # otherwise just account for the baseline
             self.data["meta"]["dm"] = ["baseline", ] + dm
-                
+        
         # Try to unpack dm_params into create_dm
         # first, but if there are too many args
         # ("TypeError") try create_dm_param
@@ -258,16 +258,23 @@ class Exp():
             self.create_dm(**dm_params)
             
             # and the univariate bold.
-            boldcol = [dm.index(b)+1 for b in bold]  ## +1 for baseline
+            boldcol = [dm.index(b)+1 for b in bold]  
+                ## +1 for baseline
+            
             self.create_bold(self.dm[:,boldcol], **bold_params)
         elif len(dm_params) == 4:
+
             # Setup the dm,
             self.create_dm_param(names=dm, **dm_params)
             
-            # then the parametric bold from self.data[]
+            # then the parametric bold 
+            # from self.data[]
             boldarr = np.array(self.data[bold.pop()])  ## Init
-            for b in bold:   ## Only goes in len(bold) > 1, pop above.
+
+            # Only goes if len(bold) > 1, see pop above.
+            for b in bold:
                 boldarr = np.vstack((boldarr, np.array(self.data[b])))
+            
             self.create_bold(boldarr, **bold_params)
         else:
             raise ValueError(
@@ -399,9 +406,12 @@ class Exp():
         except ValueError:
             self.bold = arr
         
-        self.bold += self.noise_f(self.bold.shape[0])
+        # HRF?
         if convolve:
             self.bold = self._convolve_hrf(self.bold)
+        
+        # And add noise.
+        self.bold += self.noise_f(self.bold.shape[0])
 
     
     def save_state(self, name):
@@ -435,7 +445,7 @@ class Exp():
                 self.results[name][k] = deepcopy(getattr(self,v))
             except AttributeError:
                 continue
-        
+
         # Now add the reformatted data from the current model,
         # if any.
         self.results[name].update(self._reformat_model())
@@ -446,7 +456,7 @@ class Exp():
         
         Note:
         Models become methods that must follow the naming convention,
-        model_XX, where XX are two integers.  
+        model_XX, where XX are two integers 0-9.  
         
         For example: model_01, and model_69 are valid, while model_A1, 
         model_1 and model_100 are not. """
@@ -467,14 +477,14 @@ class Exp():
 
             # Close on _template_model, update its
             # __doc__ and hang it on self as <sec>.
-            parmodel = partial(self._template_model, 
-                    bold, dm, bold_params, dm_params, norm)
+            parmodel = partial(self._template_model, bold, dm, 
+                    bold_params, dm_params, norm)
             parmodel.__doc__ = self._generate_doc(sec, bold, dm, dm_params)
-
+            
             print("Created:{0}" .format(parmodel.__doc__))
             setattr(self, sec, parmodel)
                 ## setattr magic to add 
-                ## <par> to self as <sec>
+                ## <parmodel> to self as <sec>
     
     
     def fit(self, norm="zscore"):
