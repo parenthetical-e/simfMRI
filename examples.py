@@ -9,6 +9,7 @@ from simBehave.trials import event_random
 
 class Simple(Exp):
     """ Run <n> one condition experiments. Return a list of results. """
+    
     def __init__(self, n, TR=2, ISI=2):
         try: 
             Exp.__init__(self, TR=2, ISI=2)
@@ -19,25 +20,14 @@ class Simple(Exp):
         self.durations = [1, ] * len(self.trials)
         
         np.random.shuffle(self.trials)
-    
-    
-    def model_01(self):
-        """ BOLD: box """
 
-        # Add some meta data describing the model...
-        self.data['meta']['bold'] = 'box'
-        self.data['meta']['dm'] = ('baseline', 'box')
-
-        self.create_dm(drop=None, convolve=True)
-        self.create_bold(self.dm[:,1], convolve=False)
-
-        self.fit(norm='zscore')
 
 
 class TwoCond(Exp):
     """
     Simulate two conditions using one then the other as the BOLD signal.
     """
+    
     def __init__(self, n, TR=2, ISI=2):
         try: 
             Exp.__init__(self, TR=2, ISI=2)
@@ -48,39 +38,6 @@ class TwoCond(Exp):
         self.trials = np.array(event_random(2, n, 1))
         self.durations = [1, ] * len(self.trials)
 
-    
-    def model_01(self):
-        # Add some meta data describing the model...
-        self.data['meta']['bold'] = 'box1'
-        self.data['meta']['dm'] = ('baseline','box1','box2')
-
-        self.create_dm(drop=None, convolve=True)
-        self.create_bold(self.dm[:,1], convolve=False)
-        
-        self.fit(norm='zscore')
-    
-    
-    def model_02(self):
-        # Add some meta data describing the model...
-        self.data['meta']['bold'] = 'box2'
-        self.data['meta']['dm'] = ('baseline','box','box2')
-
-        self.create_dm(drop=None, convolve=True)
-        self.create_bold(self.dm[:,2], convolve=False)
-        
-        self.fit(norm='zscore')
-    
-    
-    def model_03(self):
-        # Add some meta data describing the model...
-        self.data['meta']['bold'] = 'box1 + box2'
-        self.data['meta']['dm'] = ('baseline','box1','box2')
-
-        self.create_dm(drop=None, convolve=True)
-        self.create_bold(self.dm[:,1:3], convolve=False)
-        
-        self.fit(norm='zscore')
-        
   
 class RW(Exp):
     """
@@ -123,57 +80,3 @@ class RW(Exp):
         self.data['value'] = values
         self.data['rpe'] = rpes
 
-
-    def model_01(self):
-        """ BOLD: box """
-
-        # Add some meta data describing the model...
-        self.data['meta']['bold'] = 'box'
-        self.data['meta']['dm'] = ('baseline', 'box')
-
-        self.create_dm(drop=None, convolve=True)
-        self.create_bold(self.dm[:,1], convolve=False)
-
-        self.fit(norm='zscore')
-        
-    
-    def model_02(self):
-        """ BOLD: acc, DM: ['acc', 'rpe'], orth: True. """
-        
-        # Create the dm.
-        data_to_use = ['acc', 'rpe']
-        self.data['meta']['dm'] = ['box',] + data_to_use
-        self.create_dm_param(names=data_to_use, box=True, orth=True,
-                convolve=True)
-
-        # Create the bold.
-        # Lookup the index of bold_name in data_to_use
-        # then offest by 1 to account for the boxcar
-        bold_name = 'acc'
-        self.data['meta']['bold'] = bold_name        
-        boldarr = self.dm[:,data_to_use.index(bold_name)+1]
-        self.create_bold(boldarr, convolve=False)
-
-        # And fit
-        self.fit(norm='zscore')
-
-
-    def model_03(self):
-        """ BOLD: acc, DM: ['acc', 'value'], orth: True. """
-        
-        # Create the dm.
-        data_to_use = ['acc', 'value']
-        self.data['meta']['dm'] = ['box',] + data_to_use
-        self.create_dm_param(names=data_to_use, box=True, orth=True,
-                convolve=True)
-
-        # Create the bold.
-        # Lookup the index of bold_name in data_to_use
-        # then offest by 1 to account for the boxcar
-        bold_name = 'acc'
-        self.data['meta']['bold'] = bold_name        
-        boldarr = self.dm[:,data_to_use.index(bold_name)+1]
-        self.create_bold(boldarr, convolve=False)
-
-        # And fit
-        self.fit(norm='zscore')

@@ -14,7 +14,6 @@ def hist_t(hdf,model,name=None):
     """
 
     meta = get_model_meta(hdf,model)
-
     hist_list = []
     for dm_col in meta['dm']:
         # Make an instance RHist for the list.

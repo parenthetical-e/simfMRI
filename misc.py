@@ -1,5 +1,6 @@
 """ Who knows what, really.  The miscellaneous goes here."""
 
+
 def preturb_double_gamma(fraction,width,TR):
 	"""
 	Add scaled (by <fraction> (0-1)) white noise to a randomly selected double 

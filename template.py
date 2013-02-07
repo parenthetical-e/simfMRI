@@ -12,9 +12,11 @@ You might also want to override
     self.hrf_params
 """
 import re
+import ConfigParser
 import numpy as np
 from copy import deepcopy
 from collections import defaultdict
+from functools import partial
 from scikits.statsmodels.api import GLS
 import simfMRI
 
@@ -24,11 +26,11 @@ class Exp():
     A template class for running easily parallelizable event-related fMRI
     simulations.  
     
-    Note: Exp() can't be run as is.  For simple run-able experiments see 
+    Note: Exp() can"t be run as is.  For simple run-able experiments see 
         simfMRI.bin.examples.*
     """
     
-    def __init__(self,TR=2,ISI=2):
+    def __init__(self, TR=2, ISI=2):
         
         # ----
         # These need to be set during subclassing
@@ -36,15 +38,15 @@ class Exp():
         self.trials = None
         self.durations = None
         self.data = {}
-        self.data['meta'] = {}
+        self.data["meta"] = {}
             ## meta is for model metadata
         
         # Other needed functions you
         # might want to override
         self.noise_f = simfMRI.noise.white
         self.hrf = simfMRI.hrf.double_gamma
-        self.hrf_params = {'width':32,'TR':1,'a1':6.0,'a2':12.,
-                'b1':0.9,'b2':0.9,'c':0.35}
+        self.hrf_params = {"width":32,"TR":1,"a1":6.0,"a2":12.,
+                "b1":0.9,"b2":0.9,"c":0.35}
         self.hrf = simfMRI.hrf.double_gamma(**self.hrf_params)
         # ----
 
@@ -54,7 +56,7 @@ class Exp():
         self.ISI = ISI        
 
         # --
-        # and intialize the simulation's (private) 
+        # and intialize the simulation"s (private) 
         # data structues
         self.dm = None
         self.bold = None
@@ -70,7 +72,7 @@ class Exp():
         # --
         # Move from ISI to ITI time, if needed.
         if (self.ISI % self.TR) > 0.0:
-            raise ValueError('ISI must a even multiple of the TR.')
+            raise ValueError("ISI must a even multiple of the TR.")
         elif self.ISI > self.TR:
             # Use multplier to transform data and trials into units
             # of TR from their native ISI.
@@ -161,7 +163,7 @@ class Exp():
         
         # self.hrf may or may not exist yet
         if self.hrf == None:
-            raise ValueError('No hrf is defined. Try self.create_hrf()?')
+            raise ValueError("No hrf is defined. Try self.create_hrf()?")
         
         arr = np.asarray(arr)   ## Just in case 
 
@@ -178,6 +180,100 @@ class Exp():
             arr_c = np.convolve(arr[:], self.hrf)[0:arr.shape[0]]
         
         return arr_c
+    
+    
+    def _reformat_model(self):
+        """
+        Use save_state() to store the simulation"s state.
+        
+        This private method just extracts relevant data from the regression
+        model into a dict.
+        """
+
+        tosave = {
+            "beta":"params",
+            "t":"tvalues",
+            "fvalue":"fvalue",
+            "p":"pvalues",
+            "r":"rsquared",
+            "ci":"conf_int",
+            "resid":"resid",
+            "aic":"aic",
+            "bic":"bic",
+            "llf":"llf",
+            "mse_model":"mse_model",
+            "mse_resid":"mse_resid",
+            "mse_total":"mse_total",
+            "pretty_summary":"summary"
+        }
+        
+        # Try to get each attr (a value in the dict above)
+        # first as function (without args) then as a regular
+        # attribute.  If both fail, silently move on.
+        model_results = {}
+        for k,v in tosave.items():
+            try:
+                model_results[k] = deepcopy(getattr(self.glm,v)())
+            except TypeError:
+                model_results[k] = deepcopy(getattr(self.glm,v))
+            except AttributeError:
+                continue
+        
+        return model_results
+    
+    
+    def _generate_doc(self, name, bold, dm, dm_params):
+        """ Generate a doc string for the current model. """
+    
+        if dm_params.get("box"):
+            doc =  """ {0}. Bold: {1}. DM: {2}. """.format(
+                    name, bold, ["baseline", "box"] + dm)
+        else:
+            doc =  """ {0}. Bold: {1}. DM: {2}. """.format(
+                    name, bold, ["baseline", ] + dm)
+                    ## baseline is added automigcally
+                    ## during create_dm... so we add 
+                    ## it here too
+        return doc
+
+    
+    def _template_model(self, bold, dm, bold_params, dm_params, norm):
+        """ A template model used by populate_models() to create all
+        the regression models used during a run().
+        
+        Note: __doc__ for this function gets redone dynamically. """
+        
+        self.data["meta"]["bold"] = bold
+        
+        if dm_params.get("box"):
+            self.data["meta"]["dm"] = ["baseline", "box"] + dm
+        else:
+            self.data["meta"]["dm"] = ["baseline", ] + dm
+                
+        # Try to unpack dm_params into create_dm
+        # first, but if there are too many args
+        # ("TypeError") try create_dm_param
+        if len(dm_params) == 2:
+            # Setup the dm,
+            self.create_dm(**dm_params)
+            
+            # and the univariate bold.
+            boldcol = [dm.index(b)+1 for b in bold]  ## +1 for baseline
+            self.create_bold(self.dm[:,boldcol], **bold_params)
+        elif len(dm_params) == 4:
+            # Setup the dm,
+            self.create_dm_param(names=dm, **dm_params)
+            
+            # then the parametric bold from self.data[]
+            boldarr = np.array(self.data[bold.pop()])  ## Init
+            for b in bold:   ## Only goes in len(bold) > 1, pop above.
+                boldarr = np.vstack((boldarr, np.array(self.data[b])))
+            self.create_bold(boldarr, **bold_params)
+        else:
+            raise ValueError(
+                "dm_params has the wrong number of arguments.")
+
+        self.fit(norm=norm)
     
     
     def create_dm(self, drop=None, convolve=True):
@@ -212,8 +308,7 @@ class Exp():
             self.dm = self._convolve_hrf(self.dm)
 
 
-    def create_dm_param(self, names, drop=None, box=True, 
-            orth=False, convolve=True):
+    def create_dm_param(self, names, drop=None, box=True, orth=False, convolve=True):
         """ Create a parametric design matrix based on <names> in self.data. 
         
         If <box> a univariate dm is created that fills the leftmost
@@ -242,7 +337,7 @@ class Exp():
                     ## in at the end
 
             # Create a temp dm to hold this
-            # condition's data
+            # condition"s data
             dm_temp = np.zeros((num_tr, num_names))
 
             mask_in_tr = simfMRI.timing.dtime(
@@ -288,7 +383,7 @@ class Exp():
             self.dm = self._convolve_hrf(self.dm)
     
     
-    def create_bold(self,arr,convolve=False):
+    def create_bold(self, arr, convolve=False):
         """ 
         The provided <arr>ay becomes a noisy bold signal. 
         
@@ -299,71 +394,30 @@ class Exp():
         arr = np.array(arr)
         try:
             self.bold = arr.sum(1)
-                ## Average by col, arr might 
+                ## Sum cols, arr might 
                 ## have been 2d, need 1d.
         except ValueError:
             self.bold = arr
-            
         
         self.bold += self.noise_f(self.bold.shape[0])
         if convolve:
-            self.bold = self.convolve_hrf(self.bold)
-    
-    
-    def _reformat_model(self):
-        """
-        Use save_state() to store the simulation's state.
-        
-        This private method just extracts relevant data from the regression
-        model into a dict.
-        """
+            self.bold = self._convolve_hrf(self.bold)
 
-        tosave = {
-            'beta':'params',
-            't':'tvalues',
-            'fvalue':'fvalue',
-            'p':'pvalues',
-            'r':'rsquared',
-            'ci':'conf_int',
-            'resid':'resid',
-            'aic':'aic',
-            'bic':'bic',
-            'llf':'llf',
-            'mse_model':'mse_model',
-            'mse_resid':'mse_resid',
-            'mse_total':'mse_total',
-            'pretty_summary':'summary'
-        }
-        
-        # Try to get each attr (a value in the dict above)
-        # first as function (without args) then as a regular
-        # attribute.  If both fail, silently move on.
-        model_results = {}
-        for k,v in tosave.items():
-            try:
-                model_results[k] = deepcopy(getattr(self.glm,v)())
-            except TypeError:
-                model_results[k] = deepcopy(getattr(self.glm,v))
-            except AttributeError:
-                continue
-        
-        return model_results
     
-    
-    def save_state(self,name):
+    def save_state(self, name):
         """
         Saves most of the state of the current simulation to results, keyed
         on <name>.  Saves greedily, trading storage space for security and
         redundancy.
         """
-
+        
         tosave = {
-            'TR':'TR',
-            'ISI':'ISI',
-            'trials':'trials',
-            'data':'data',
-            'dm':'dm',
-            'bold':'bold'
+            "TR":"TR",
+            "ISI":"ISI",
+            "trials":"trials",
+            "data":"data",
+            "dm":"dm",
+            "bold":"bold"
         }
             ## This list is only for attr hung directly off
             ## of self.
@@ -385,9 +439,45 @@ class Exp():
         # Now add the reformatted data from the current model,
         # if any.
         self.results[name].update(self._reformat_model())
+
+    
+    def populate_models(self, model_config):
+        """ Use <model_config> to populate the experiment with models. 
+        
+        Note:
+        Models become methods that must follow the naming convention,
+        model_XX, where XX are two integers.  
+        
+        For example: model_01, and model_69 are valid, while model_A1, 
+        model_1 and model_100 are not. """
+        
+        # Read in the model_config and loop
+        # over its
+        conf = ConfigParser.ConfigParser()
+        conf.read(model_config)
+        for sec in conf.sections():
+
+            # Get the config data for sec
+            dm_params = eval(conf.get(sec, "dm_params"))
+            bold_params = eval(conf.get(sec, "bold_params"))
+            bold = eval(conf.get(sec, "bold"))
+            dm = eval(conf.get(sec, "dm"))
+            norm = eval(conf.get(sec, "norm"))
+                ## Note: Using eval is slow and REALLY unsafe
+
+            # Close on _template_model, update its
+            # __doc__ and hang it on self as <sec>.
+            parmodel = partial(self._template_model, 
+                    bold, dm, bold_params, dm_params, norm)
+            parmodel.__doc__ = self._generate_doc(sec, bold, dm, dm_params)
+
+            print("Created:{0}" .format(parmodel.__doc__))
+            setattr(self, sec, parmodel)
+                ## setattr magic to add 
+                ## <par> to self as <sec>
     
     
-    def fit(self, norm='zscore'):
+    def fit(self, norm="zscore"):
         """ Calculate the regression parameters and statistics. """
         
         bold = self.bold.copy()
@@ -400,7 +490,7 @@ class Exp():
 
         # Add movement regressors... if present
         try:
-            dm_movement = self.data['movement']
+            dm_movement = self.data["movement"]
             dm = np.vstack((dm, dm_movement))
         except KeyError:
             pass
@@ -449,11 +539,11 @@ class Exp():
         past_models = []
         model_count = 0
         for attr in all_attr:
-            a_s = re.split('_', attr)
+            a_s = re.split("_", attr)
             
             # Match only model_N where N is an integer
             if len(a_s) == 2:
-                if (a_s[0] == 'model') and (re.match('\A\d+\Z', a_s[1])):
+                if (a_s[0] == "model") and (re.match("\A\d+\Z", a_s[1])):
                     
                     model_count += 1
                     model = attr
@@ -462,7 +552,7 @@ class Exp():
                     # Model name must be unique.
                     if model in past_models:
                         raise AttributeError(
-                                '{0} was not unique.'.format(model))
+                                "{0} was not unique.".format(model))
                     past_models.append(model)
 
                     # Now call the model and
@@ -482,23 +572,23 @@ class Exp():
         
         <code> - the unique batch or run code for this experiment.
         
-        Models are any method of the form 'model_N' where N is an
+        Models are any method of the form "model_N" where N is an
         integer (e.g. model_2, model_1012 or model_666).  Models take no
         arguments.
         """
         
-        self.results['batch_code'] = code
+        self.results["batch_code"] = code
         
         # find all self.model_N attritubes and run them.
         all_attr = dir(self)
         all_attr.sort()
         past_models = []
         for attr in all_attr:
-            a_s = re.split('_',attr)
+            a_s = re.split("_",attr)
             
             # Match only model_N where N is an integer
             if len(a_s) == 2:
-                if (a_s[0] == 'model') and (re.match('\A\d+\Z',a_s[1])):
+                if (a_s[0] == "model") and (re.match("\A\d+\Z",a_s[1])):
                     
                     model = attr
                         ## Rename for clarity
@@ -506,12 +596,12 @@ class Exp():
                     # Model name must be unique.
                     if model in past_models:
                         raise AttributeError(
-                                '{0} was not unique.'.format(model))
+                                "{0} was not unique.".format(model))
                     past_models.append(model)
 
                     # Now call the model and
                     # save its results.
-                    print('Fitting {0}.'.format(model))
+                    print("Fitting {0}.".format(model))
                     try:
                         getattr(self, model)()
                     except KeyError:
