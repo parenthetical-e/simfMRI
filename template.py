@@ -464,27 +464,36 @@ class Exp():
         # Read in the model_config and loop
         # over its
         conf = ConfigParser.ConfigParser()
-        conf.read(model_config)
-        print(conf.sections())
-        for sec in conf.sections():
-            # Get the config data for sec
-            dm_params = eval(conf.get(sec, "dm_params"))
-            bold_params = eval(conf.get(sec, "bold_params"))
-            bold = eval(conf.get(sec, "bold"))
-            dm = eval(conf.get(sec, "dm"))
-            norm = eval(conf.get(sec, "norm"))
-                ## Note: Using eval is slow and REALLY unsafe
+        readresult = conf.read(model_config)
+            ## If conf.read() can't find model_config
+            ## it (annoyingly) returns an empty list
+            ## in python empty lists are false, so...
 
-            # Close on _template_model, update its
-            # __doc__ and hang it on self as <sec>.
-            parmodel = partial(self._template_model, bold, dm, 
-                    bold_params, dm_params, norm)
-            parmodel.__doc__ = self._generate_doc(sec, bold, dm, dm_params)
+        if readresult:
+            print(conf.sections()) 
+                ## Tell the user about the models.
             
-            print("Created:{0}" .format(parmodel.__doc__))
-            setattr(self, sec, parmodel)
-                ## setattr magic to add 
-                ## <parmodel> to self as <sec>
+            for sec in conf.sections():
+                # Get the config data for sec
+                dm_params = eval(conf.get(sec, "dm_params"))
+                bold_params = eval(conf.get(sec, "bold_params"))
+                bold = eval(conf.get(sec, "bold"))
+                dm = eval(conf.get(sec, "dm"))
+                norm = eval(conf.get(sec, "norm"))
+                    ## Note: Using eval is slow and REALLY unsafe
+
+                # Close on _template_model, update its
+                # __doc__ and hang it on self as <sec>.
+                parmodel = partial(self._template_model, bold, dm, 
+                        bold_params, dm_params, norm)
+                parmodel.__doc__ = self._generate_doc(sec, bold, dm, dm_params)
+            
+                print("Created:{0}" .format(parmodel.__doc__))
+                setattr(self, sec, parmodel)
+                    ## setattr magic to add 
+                    ## <parmodel> to self as <sec>
+        else:
+            raise IOError("No such file: '{0}'".format(model_config))
     
     
     def fit(self, norm="zscore"):
