@@ -82,3 +82,20 @@ def get_model_meta(hdf,model):
 
     return meta
 
+
+def get_model_names(hdf):
+    """ Return a list of all the model names in <hdf>. """
+    
+    f = h5py.File(hdf,'r')
+    
+    # Get a list of the top nodes in the hdf
+    # as these will be a list of models
+    topn = f['/0/'].keys()
+    topn.remove('batch_code')
+        ## batch_code is not a model 
+        ## but will be in the top
+        ## set of hdf nodes
+    
+    return topn
+
+    

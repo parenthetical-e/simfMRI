@@ -456,17 +456,17 @@ class Exp():
         
         Note:
         Models become methods that must follow the naming convention,
-        model_XX, where XX are two integers 0-9.  
+        model_XX.., where XX.. is more than two integers [0-9].  
         
-        For example: model_01, and model_69 are valid, while model_A1, 
-        model_1 and model_100 are not. """
+        For example: model_01, model_010, and model_69 are valid, 
+        while model_A1, model_1 are not. """
         
         # Read in the model_config and loop
         # over its
         conf = ConfigParser.ConfigParser()
         conf.read(model_config)
+        print(conf.sections())
         for sec in conf.sections():
-
             # Get the config data for sec
             dm_params = eval(conf.get(sec, "dm_params"))
             bold_params = eval(conf.get(sec, "bold_params"))
