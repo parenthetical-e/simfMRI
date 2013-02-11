@@ -23,6 +23,23 @@ def _walk(d,hdf):
             hdfd = hdf.create_dataset(k,data=data)
 
 
+def _unwalk(start, hdf, d=None):
+    """ Undoes the work of _walk by walking <hdf> (starting at /start) 
+    creating a dict as it goes. """
+    
+    if d == None:
+        d = {}
+    
+    f = h5py.File(hdf,'r')
+    for k, v in dict(f.items()):
+        try:
+            d[k] = v.value
+        except AttributeError:
+            d[k] = {}
+    
+    pass
+
+
 def write_hdf(results,name):
     """ 
     Iterate over the <results> list, mimicking the hierarchical structure of 
@@ -41,6 +58,17 @@ def write_hdf(results,name):
     
     f.close()
 
+
+def read_hdf_as_results(hdf):
+    """ Read <hdf> into a 'results' list of dicts matching the format 
+    returned by simfMRI.run(). """
+    
+    f = h5py.File(name,'r')
+    # TODO
+    pass
+        
+    return results
+    
 
 def read_hdf(hdf,path='/model_01/t'):
     """ 
