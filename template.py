@@ -18,7 +18,11 @@ from copy import deepcopy
 from collections import defaultdict
 from functools import partial
 from scikits.statsmodels.api import GLS
-import simfMRI
+from simfMRI import norm
+from simfMRI.noise import white
+from simfMRI.hrf import double_gamma
+from simfMRI.timing import dtime
+from simfMRI.misc import process_prng
 
 
 class Exp():
@@ -30,7 +34,11 @@ class Exp():
         simfMRI.bin.examples.*
     """
     
-    def __init__(self, TR=2, ISI=2):
+    def __init__(self, TR=2, ISI=2, prng=None):
+        
+        self.prng = process_prng(prng)
+            ## Hang a RandomState object off
+            ## of self.
         
         # ----
         # These need to be set during subclassing
@@ -43,10 +51,10 @@ class Exp():
         
         # Other needed functions you
         # might want to override
-        self.noise_f = simfMRI.noise.white
+        self.noise_f = white
         self.hrf_params = {"width":32,"TR":1,"a1":6.0,"a2":12.,
                 "b1":0.9,"b2":0.9,"c":0.35}
-        self.hrf = simfMRI.hrf.double_gamma(**self.hrf_params)
+        self.hrf = double_gamma(**self.hrf_params)
         # ----
 
         # ----
@@ -97,7 +105,7 @@ class Exp():
         """ Normalize the <arr>ay using the <function_name> 
         of one of the functions in roi.norm """
 
-        return getattr(simfMRI.norm, function_name)(arr)
+        return getattr(norm, function_name)(arr)
 
 
     def _orth_dm(self):
@@ -304,7 +312,7 @@ class Exp():
             # Create boolean array use it to 
             # populate the dm with ones... 
             # which must be in tr time.
-            mask_in_tr = simfMRI.timing.dtime(
+            mask_in_tr = dtime(
                     self.trials == cond, self.durations, drop, False)
 
             dm_unit[mask_in_tr,col] = 1
@@ -347,13 +355,13 @@ class Exp():
             # condition"s data
             dm_temp = np.zeros((num_tr, num_names))
 
-            mask_in_tr = simfMRI.timing.dtime(
+            mask_in_tr = dtime(
                     self.trials == cond, self.durations, drop, False)
 
             # Get the named data, convert to tr time 
             # then add to the temp dm using the mask
             for col, name in enumerate(names):
-                data_in_tr = simfMRI.timing.dtime(
+                data_in_tr = dtime(
                             self.data[name], self.durations, drop, 0)
 
                 dm_temp[mask_in_tr,col] = data_in_tr[mask_in_tr]
@@ -411,8 +419,9 @@ class Exp():
             self.bold = self._convolve_hrf(self.bold)
         
         # And add noise.
-        self.bold += self.noise_f(self.bold.shape[0])
-
+        noise, self.prng = self.noise_f(self.bold.shape[0])
+        self.bold += noise
+    
     
     def save_state(self, name):
         """
