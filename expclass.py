@@ -206,8 +206,7 @@ class Exp():
             "llf":"llf",
             "mse_model":"mse_model",
             "mse_resid":"mse_resid",
-            "mse_total":"mse_total",
-            "pretty_summary":"summary"
+            "mse_total":"mse_total"
         }
         
         # Try to get each attr (a value in the dict above)
