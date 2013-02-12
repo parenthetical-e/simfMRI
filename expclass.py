@@ -22,7 +22,6 @@ from simfMRI import norm
 from simfMRI.noise import white
 from simfMRI.hrf import double_gamma
 from simfMRI.timing import dtime
-from simfMRI.misc import process_prng
 
 
 class Exp():
@@ -35,16 +34,15 @@ class Exp():
     """
     
     def __init__(self, TR=2, ISI=2, prng=None):
-        
-        self.prng = process_prng(prng)
-            ## Hang a RandomState object off
-            ## of self.
-        
         # ----
         # These need to be set during subclassing
         # and before use.
         self.trials = None
         self.durations = None
+        self.prng = None
+            ## Hang a RandomState object off
+            ## of self.
+        
         self.data = {}
         self.data["meta"] = {}
             ## meta is for model metadata
@@ -419,7 +417,7 @@ class Exp():
             self.bold = self._convolve_hrf(self.bold)
         
         # And add noise.
-        noise, self.prng = self.noise_f(self.bold.shape[0])
+        noise, self.prng = self.noise_f(self.bold.shape[0], self.prng)
         self.bold += noise
     
     

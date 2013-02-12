@@ -1,9 +1,9 @@
+import os
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
-
 from bigstats.hist import RHist
-from simfMRI.io import read_hdf_inc, get_model_meta
+from simfMRI.io import read_hdf_inc, get_model_meta, get_model_names
 
 
 def hist_t_all_models(path, hdf, basename):
@@ -11,7 +11,7 @@ def hist_t_all_models(path, hdf, basename):
     the hdf, prefixing each with <basename>.
     """
     
-    hdfpath = os.join.path(path, hdf)
+    hdfpath = os.path.join(path, hdf)
     
     # Make a list of the models 
     # to plot and plot them 
@@ -19,7 +19,7 @@ def hist_t_all_models(path, hdf, basename):
     for mod in models:
         print("Plotting {0}.".format(mod))
         
-        pname = os.path.join(hdfpath, basename+"_"+mod)
+        pname = os.path.join(path, basename+"_"+mod)
         hist_t(hdfpath, mod, pname)
 
 

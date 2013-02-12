@@ -1,14 +1,16 @@
 """ A template Class for top-level experimental runs. """
-import os 
+import os
 from numpy.random import RandomState
 from multiprocessing import Pool
 from simfMRI.io import write_hdf, get_model_names
 from simfMRI.analysis.plot import hist_t
 from simfMRI.mapreduce import create_chunks, reduce_chunks
+from simfMRI.misc import process_prng
 
 
 class Run():
     """ A template for an experimental run. """
+    
     def __init__(self):
 
         # ----
@@ -17,56 +19,73 @@ class Run():
         self.BaseClass = None  ##  = BaseClass()
         
         # ----
-        # Globals
+        # User Globals
         self.nrun = None
         self.TR = None
         self.ISI = None
         self.model_conf = None
         self.savedir = None
+        self.ntrial = None
+            
+        # --
+        # Optional Globals
         self.ncore = None
-        self.rwtype = None
-
+    
         # ----
-        # Hard coded trial count
-        self.ntrial = 60
+        # Misc
+        self.prngs = None   ## A list of RandomState() instances
+                            ## setup by the go() attr
     
+    
+    def __call__(self, (names, prng)):
+        return self._singleloop((names, prng))
 
-    def _step(self, (name, prng)):
-        """ Using the BaseClass attribute run a simulation exp, 
-        one step in the Run(). Returns a dictionary of results. """
+
+    def _single(self, name, prng):
+        """ Using the BaseClass attribute run a simulation exp named
+        <name> using the given prng.  Returns a dictionary of results. """
     
+        print("Experiment {0}.".format(name))
+        
         exp = self.BaseClass(self.ntrial, TR=self.TR, ISI=self.ISI, prng=prng)
         exp.populate_models(self.model_conf)
 
-        return self.exp.run(name)
+        return exp.run(name)
 
+
+    def _singleloop(self, (names, prng)):
+        """ Loop over <names> and run an Exp for each.  Each Exp() uses
+        prng, a RandomState(). Returns a list of results dictionaries. """
         
-    def run(self, parallel=False):
+        return [self._single(name, prng) for name in names]    
+            
+            
+    def go(self, parallel=False):
         """ Run an experimental run, results are stored the 
         results attribute. """
         
         if parallel:
             # ----
             # Setup chunks and seeds
-            self.run_chunk = create_chunks(self.nrun, self.ncore)
-            self.prngs = [RandomState(ii+10) for ii in range(
+            self.run_chunks = create_chunks(self.nrun, self.ncore)
+            self.prngs = [process_prng(ii+10) for ii in range(
                     len(self.run_chunks))]
             
             # ----
             # Create a pool, and use it,
             # and store the results
             pool = Pool(self.ncore)
-            
-            results_in_chunks = pool.map(self._step, 
-                    zip(self.run_chunks, self.prngs))
-            
+            results_in_chunks = pool.map(self, zip(self.run_chunks, self.prngs))
+                    ## Calling self here works via __call__
+
             self.results = reduce_chunks(results_in_chunks)
         else:
             # Run an experimental Run, and save to
             # self.results
-            self.prngs = [RandomState(42), ]
-            self.results = [_step((ii, self.prngs[0])) for ii in range(
-                    self.nrun))]
+            self.prngs = [process_prng(42), ]
+            
+            self.results = self._singleloop((range(self.nrun), self.prngs[0]))
+                    ## Calling self here works via __call__
     
     
     def save_results(self, name):

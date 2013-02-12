@@ -41,7 +41,8 @@ def process_prng(prng):
     try:
         prng.get_state()
     except AttributeError:
+        print("Creating new RandomState(). Seed: {0}".format(prng))
         prng = np.random.RandomState(prng)
-        
+    
     return prng
 

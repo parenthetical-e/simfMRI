@@ -1,46 +1,58 @@
-""" A top-level experimental script that run 100 iterations of 
-the Simple example (see simfMRI.examples.Simple()). """
-import os
-from functools import partial
-from simfMRI.examples import RW
-from simfMRI.io import write_hdf
-from simfMRI.analysis.plot import hist_t
+""" A top-level experimental script that run 100 iterations (on 2 cores) of 
+the RW example (see simfMRI.exp_examples.RW()). """
+import functools
+from simfMRI.exp_examples import RW
+from simfMRI.analysis.plot import hist_t_all_models
+from simfMRI.runclass import Run
 
 
-def main(name, model_conf, TR, ISI):
-    """ Does all the work. """
+class RunRW100(Run):
+    """ An example of a 100 iteration RW experimental Run(). """
     
-    n = 60 ## Number of trials
-    exp = RW(n, 'learn', TR, ISI)
-    exp.populate_models(model_conf)
-
-    return exp.run(name)
+    def __init__(self):
+        try: 
+            Run.__init__(self)
+        except AttributeError: 
+            pass
+        
+        # ----
+        # An instance of simfMRI.examples.* Class (or similar) 
+        # should go here.
+        self.BaseClass = functools.partial(RW, behave="random")  
+            ## Nornalize the signature of BaseClass with 
+            ## functools.partial
+            ## Expects:
+            ## BaseClass(self.ntrial, TR=self.TR, ISI=self.ISI, prng=prng)
+        
+        # ----
+        # User Globals
+        self.nrun = 100
+        self.TR = 2
+        self.ISI = 2
+        self.model_conf = "rw.ini"
+        self.savedir = "testdata"
+        self.ntrial = 60
+        
+        # --
+        # Optional Globals
+        self.ncore = 2
+    
+        # ----
+        # Misc
+        self.prngs = None   ## A list of RandomState() instances
+                            ## setup by the go() attr
 
 
 if __name__ == "__main__":
-    TR = 2
-    ISI = 2
-    nrun = 100
-    model_conf = "rw.ini"
-    
-    # Partial function application to setup main for easy
-    # mapping (and later parallelization), creating pmain.
-    pmain = partial(main, model_conf=model_conf, TR=TR, ISI=ISI)
-    results = map(pmain, range(nrun))
-    
-    results_name = "rw{0}".format(nrun)
-    
-    print("Writing results to disk.")    
-    write_hdf(results, os.path.join("testdata", results_name+".hdf5"))
-    
-    # Make a list of the models 
-    # to plot and plot them 
-    print("Plotting results.")
-    models = ["model_01", "model_02", "model_03"]
-    for mod in models:
-        dataf = os.path.join("testdata", results_name+".hdf5") 
-        pname = os.path.join("testdata",results_name+"_"+mod)
-        hist_t(dataf, mod, pname) 
-    
-    
+    sim = RunRW100()
+    sim.go(parallel=False)
+        ## Results get stored internally.
 
+    # Writing the results to a hdf5    
+    results_name = "rw{0}".format(sim.nrun)
+    sim.save_results(results_name)
+
+    # And plot all the models 
+    # (each is autosaved).
+    hist_t_all_models(sim.savedir, results_name+".hdf5", results_name)
+    

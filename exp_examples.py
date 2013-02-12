@@ -5,16 +5,18 @@ import simfMRI
 import simBehave
 from simfMRI.expclass import Exp
 from simBehave.trials import event_random
-
+from simfMRI.misc import process_prng
 
 class Simple(Exp):
-    """ Run <n> one condition experiments. Return a list of results. """
+    """ A simple 1 condition experiment. """
     
     def __init__(self, n, TR=2, ISI=2, prng=None):
         try: 
             Exp.__init__(self, TR=2, ISI=2, prng=None)
         except AttributeError: 
             pass
+        
+        self.prng = process_prng(prng)
         
         self.trials = np.array([0,]*n + [1,]*n)
         self.durations = [1, ] * len(self.trials)
@@ -34,6 +36,8 @@ class TwoCond(Exp):
         except AttributeError: 
             pass
         
+        self.prng = process_prng(prng)
+        
         # event_random(N,k,mult=1)
         self.trials, self.prng = event_random(2, n, 1, self.prng)
         self.trials = np.array(self.trials)
@@ -48,17 +52,22 @@ class RW(Exp):
     parameteric regressors.
     """
     def __init__(self, n, behave='learn', TR=2, ISI=2, prng=None):
-        Exp.__init__(self, TR=2, ISI=2, prng=None)
-
+        try: 
+            Exp.__init__(self, TR=2, ISI=2, prng=None)
+        except AttributeError: 
+            pass
+        
+        self.prng = process_prng(prng)
+        
         n_cond = 1
         n_trials_cond = n
         trials = []
         acc = []
         p = []
-        if behave is 'learn':
+        if behave == 'learn':
     		trials, acc, p, self.prng = simBehave.behave.learn(
     				n_cond, n_trials_cond, 3, True, self.prng)
-        elif behave is 'random':
+        elif behave == 'random':
     			trials, acc, p, self.prng = simBehave.behave.random(
                         n_cond,n_trials_cond, 3, self.prng)
         else:
@@ -82,5 +91,6 @@ class RW(Exp):
         self.data['value'] = values
         self.data['rpe'] = rpes
         self.data['rand'] = self.prng.rand(len(self.trials))
+
 
 
