@@ -5,6 +5,24 @@ import matplotlib.pyplot as plt
 from bigstats.hist import RHist
 from simfMRI.io import read_hdf_inc, get_model_meta
 
+
+def hist_t_all_models(path, hdf, basename):
+    """ Given a <path> and the <hdfname> plot and save all the models in
+    the hdf, prefixing each with <basename>.
+    """
+    
+    hdfpath = os.join.path(path, hdf)
+    
+    # Make a list of the models 
+    # to plot and plot them 
+    models = get_model_names(hdfpath)
+    for mod in models:
+        print("Plotting {0}.".format(mod))
+        
+        pname = os.path.join(hdfpath, basename+"_"+mod)
+        hist_t(hdfpath, mod, pname)
+
+
 def hist_t(hdf,model,name=None):
     """ 
     Plot histograms of the t values in <hdf> for each condition in 

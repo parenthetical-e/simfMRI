@@ -4,42 +4,38 @@ import os
 import functools
 from simfMRI.examples import Simple
 from simfMRI.io import write_hdf
-from simfMRI.analysis.plot import hist_t
+from simfMRI.analysis.plot import hist_t_all_models
+from simfMRI.runclass import Run
 
 
-def main(name, model_conf, TR, ISI):
-    """ Does all the work. """
+class RunSimple100(Run):
     
-    n = 60 ## Number of trials
-    exp = Simple(n, TR, ISI)
-    exp.populate_models(model_conf)
-    
-    return exp.run(name)
+    def __init__():
+        Run.__init__()
+        
+        # ----
+        # A simfMRI.examples.* Class (or similar) 
+        # should go here.
+        self.BaseClass = Simple
+        
+        # ----
+        # Globals
+        self.nrun = 100
+        self.TR = 2
+        self.ISI = 2
+        self.model_conf = "simple.ini"
+        self.savedir = "testdata"
+        self.ncore = 2
 
 
 if __name__ == "__main__":
-    TR = 2
-    ISI = 2
-    nrun = 100
-    model_conf = "simple.ini"
     
-    # Partial function application to setup main for easy
-    # mapping (and later parallelization), creating pmain.
-    pmain = functools.partial(main, model_conf=model_conf, TR=TR, ISI=ISI)
-    results = map(pmain, range(nrun))
+    rs100 = RunSimple100()
+    rs100.run(parallel=True)
     
     results_name = "simple{0}".format(nrun)
+    rs100.save_results(results_name)
     
-    print("Writing results to disk.")    
-    write_hdf(results, os.path.join("testdata", results_name+".hdf5"))
-    
-    # Make a list of the models 
-    # to plot and plot them 
-    print("Plotting results.")
-    models = ["model_01", "model_02"]
-    for mod in models:
-        dataf = os.path.join("testdata", results_name+".hdf5") 
-        pname = os.path.join("testdata",results_name+"_"+mod)
-        hist_t(dataf, mod, pname) 
-    
+    # plot TODO broken probably
+    hist_t_all_models(rs100.savedir, results_name+".hdf5", results_name)
     
