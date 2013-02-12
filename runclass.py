@@ -6,15 +6,15 @@ from simfMRI.io import write_hdf, get_model_names
 from simfMRI.analysis.plot import hist_t
 from simfMRI.mapreduce import create_chunks, reduce_chunks
 
-
+# work out prng stuff it is broken!
 class Run():
     """ A template for an experimental run. """
-    def __init__():
+    def __init__(self):
 
         # ----
-        # A simfMRI.examples.* Class (or similar) 
+        # An instance of simfMRI.examples.* Class (or similar) 
         # should go here.
-        self.BaseClass = None
+        self.BaseClass = None  ##  = BaseClass()
         
         # ----
         # Globals
@@ -31,14 +31,14 @@ class Run():
         self.ntrial = 60
     
 
-    def _step(self, (name, seed)):
-        """ Runs a simulation Exp, one step in the Run(). """
+    def _step(self, (name, prng)):
+        """ Using the BaseClass attribute run a simulation exp, 
+        one step in the Run(). Returns a dictionary of results. """
     
-        prng = RandomState(seed)
-        exp = self.BaseClass(name, self.TR, self.ISI, prng)
+        exp = self.BaseClass(self.ntrial, TR=self.TR, ISI=self.ISI, prng=prng)
         exp.populate_models(self.model_conf)
-    
-        return exp.run(name)
+
+        return self.exp.run(name)
 
         
     def run(self, parallel=False):
@@ -49,7 +49,8 @@ class Run():
             # ----
             # Setup chunks and seeds
             self.run_chunk = create_chunks(self.nrun, self.ncore)
-            self.seeds = [ii+10 for ii in range(len(self.run_chunks))]
+            self.prngs = [RandomState(ii+10) for ii in range(
+                    len(self.run_chunks))]
             
             # ----
             # Create a pool, and use it,
@@ -57,17 +58,17 @@ class Run():
             pool = Pool(self.ncore)
             
             results_in_chunks = pool.map(self._step, 
-                    zip(self.run_chunks, self.seeds))
+                    zip(self.run_chunks, self.prngs))
             
             self.results = reduce_chunks(results_in_chunks)
         else:
             # Run an experimental Run, and save to
             # self.results
-            self.seeds = 42
-            self.results = [_step((ii, self.seeds)) for 
-                    ii in range(self.nrun))]
+            self.prngs = [RandomState(42), ]
+            self.results = [_step((ii, self.prngs[0])) for ii in range(
+                    self.nrun))]
     
-        
+    
     def save_results(self, name):
         """ Save results as <name> in the dir specified in the 
         savedir attribute. """

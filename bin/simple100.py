@@ -9,6 +9,7 @@ from simfMRI.runclass import Run
 
 
 class RunSimple100(Run):
+    """ An example of a 100 iteration Simple experimental Run(). """
     
     def __init__():
         Run.__init__()
