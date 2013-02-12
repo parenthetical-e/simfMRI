@@ -6,7 +6,7 @@ from simfMRI.io import write_hdf, get_model_names
 from simfMRI.analysis.plot import hist_t
 from simfMRI.mapreduce import create_chunks, reduce_chunks
 
-# work out prng stuff it is broken!
+
 class Run():
     """ A template for an experimental run. """
     def __init__(self):

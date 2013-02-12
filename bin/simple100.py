@@ -2,8 +2,8 @@
 the Simple example (see simfMRI.examples.Simple()). """
 import os
 import functools
-from simfMRI.examples import Simple
 from simfMRI.io import write_hdf
+from simfMRI.exp_examples import Simple
 from simfMRI.analysis.plot import hist_t_all_models
 from simfMRI.runclass import Run
 

@@ -1,7 +1,3 @@
-__all__ = ['template','hrf','norm','misc','noise','mapreduce','io',
-        'analysis','examples', 'timing']
-
-
 import exp_examples
 import expclass
 import runclass

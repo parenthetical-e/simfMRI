@@ -3,7 +3,7 @@ import numpy as np
 import rl
 import simfMRI
 import simBehave
-from simfMRI.template import Exp
+from simfMRI.expclass import Exp
 from simBehave.trials import event_random
 
 
