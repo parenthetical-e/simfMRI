@@ -47,6 +47,7 @@ class Exp():
         self.data["meta"] = {}
             ## meta is for model metadata
         
+        # ----
         # Other needed functions you
         # might want to override
         self.noise_f = white
@@ -416,7 +417,7 @@ class Exp():
             self.bold = self._convolve_hrf(self.bold)
         
         # And add noise.
-        noise, self.prng = self.noise_f(self.bold.shape[0], self.prng)
+        noise, self.prng = self.noise_f(N=self.bold.shape[0], prng=self.prng)
         self.bold += noise
     
     

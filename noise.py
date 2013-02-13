@@ -4,7 +4,7 @@ import scipy.stats as stats
 from simfMRI.misc import process_prng
 
 
-def white(N, prng=None):
+def white(N, sigma=1, prng=None):
     """ Create and return a white noise array of length <N>.
     
     Notes on prng:
@@ -22,7 +22,7 @@ def white(N, prng=None):
         ## There does not seem to be a way to set random
         ## state of stats.* functions directly.
     
-    noise = stats.norm.rvs(size=N)
+    noise = stats.norm.rvs(size=N, loc=0, scale=sigma)
     
     prng.set_state(np.random.get_state())
         ## Pass the seed stat from np back to
@@ -52,19 +52,19 @@ def ar1(N, alpha=0.2, prng=None):
     
     prng = process_prng(prng)
     
-    noise, prng = white(N, prng)
+    noise, prng = white(N=N, prng=prng)
     arnoise = [noise[0], ]
         ## Init by copying over the first
         ## so the loop below
         ## has someting to work with for
         ## the first iteration
-        
+    
     [arnoise.append(noise[ii]+(alpha * noise[ii-1])) for ii in range(
             1, len(noise))]
     
     return arnoise, prng
-    
- 
+
+
 def physio(N, TR, sigma=1, freq_heart=1.17, freq_resp=0.2, prng=None):
     """ Create periodic physiological noise of length N based on 
     <freq_heart> and <freq_resp> and a white noise process. 
@@ -97,7 +97,7 @@ def physio(N, TR, sigma=1, freq_heart=1.17, freq_resp=0.2, prng=None):
     
     # Create the white noise then
     # add the weighted physio
-    noise, prng = white(N, prng) 
+    noise, prng = white(N=N, prng=prng) 
     noise += hr_weight * hr_drift
     
     return noise, prng
