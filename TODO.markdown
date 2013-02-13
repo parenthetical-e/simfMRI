@@ -1,2 +1,1 @@
-* Add auto corr noise
-* Add dm phase
+* Add alpha compare Exp and ini

@@ -6,9 +6,15 @@ from bigstats.hist import RHist
 from simfMRI.io import read_hdf_inc, get_model_meta, get_model_names
 
 
+def noise_spectrum(noise, name=None):
+    """TODO"""
+    
+    pass
+
+
 def hist_t_all_models(path, hdf, basename):
-    """ Given a <path> and the <hdfname> plot and save all the models in
-    the hdf, prefixing each with <basename>.
+    """ Given a <path> and the <hdf> name, plot and save all the models in
+    the <hdf>, prefixing each with <basename>.
     """
     
     hdfpath = os.path.join(path, hdf)
@@ -31,7 +37,7 @@ def hist_t(hdf,model,name=None):
     If <name> is not None the plot is saved as <name>.pdf.
     """
 
-    meta = get_model_meta(hdf,model)
+    meta = get_model_meta(hdf, model)
     hist_list = []
     for dm_col in meta['dm']:
         # Make an instance RHist for the list.
