@@ -66,7 +66,7 @@ def ar1(N, alpha=0.2, prng=None):
 
 
 def physio(N, TR, sigma=1, freq_heart=1.17, freq_resp=0.2, prng=None):
-    """ Create periodic physiological noise of length N based on 
+    """ Create periodic physiological noise of length <N> based on 
     <freq_heart> and <freq_resp> and a white noise process. 
     
     This function was ported form a similar function ('physnoise.R')
@@ -80,7 +80,7 @@ def physio(N, TR, sigma=1, freq_heart=1.17, freq_resp=0.2, prng=None):
     If <prng> is a number that number is used to seed (i.e., 
         RandomState(<prng>)).
     If <prng> is None, the seed is set automagically. """
-    
+        
     # Calculate rates
     heart_beat = 2 * np.pi * freq_heart * TR
     resp_rate = 2 * np.pi * freq_resp * TR
@@ -102,7 +102,66 @@ def physio(N, TR, sigma=1, freq_heart=1.17, freq_resp=0.2, prng=None):
     
     return noise, prng
 
-       
+
+def lowfreqdrift(N, TR, prng=None):
+    """ Create noise of length <N> with a low frequency drift.  Frequency is    
+    randomly selected from a uniform distribution spanning 0.002-0.015 Hz,  
+    a range taken from:
+    
+    Smith et al (1999), Investigation of the Low Frequency Drift in fMRI 
+    Signal, NeuroImage 9, 526-533.
+    
+    ----
+    
+    This function was ported form a similar function ('lowfreqdrift.R')
+    in the R 'neuRosim' package (ver 02-10):
+    
+    http://cran.r-project.org/web/packages/neuRosim/index.html
+    
+    Notes on prng:
+    If <prng> is a np.random.RandomState() instance, it is used for random
+        number generation.  
+    If <prng> is a number that number is used to seed (i.e., 
+        RandomState(<prng>)).
+    If <prng> is None, the seed is set automagically.
+    """
+
+    prng = process_prng(prng)
+    
+    freq = prng.randint(66, 500)
+        ## i.e. 0.002-0.015 Hz
+    
+    ## The number of bases is n
+    nbasis = int(np.floor(2 * (N * TR) / freq + 1))
+
+    ## Creates the drifts; magic!
+    def _gen_drifts(nrow, ncol):
+        idx = np.arange(0, nrow)
+        print(idx)
+        drifts = np.zeros((nrow, ncol+1))
+        drifts[:,0] = np.repeat(1 / np.sqrt(nrow), nrow)
+        for col in range(2, ncol+1):
+            print(col)
+            drift = np.sqrt(2. / nrow) * 10. * np.cos(
+                    np.pi * (2. * idx + 1.) * (col - 1.) / (2. * nrow))
+            print(drift)
+            drifts[:, col] = drift
+            
+        return drifts
+    
+    noise = _gen_drifts(N, nbasis)
+    noise = noise[:,1:]     ## Drop the first col
+    print(noise)
+    noise = noise.sum(1)    ## Sum the rows, creating
+                            ## creating the final noise
+    
+    # Now add white noise
+    whiten, prng = white(N, sigma=1, prng=prng)
+    noise += whiten
+
+    return noise, prng
+
+
 def shift(noise, offset, prng=None):
     """ Shift <noise> (1d) by <offset>.  If <white> is true add white 
     noise as well. 
