@@ -137,21 +137,18 @@ def lowfreqdrift(N, TR, prng=None):
     ## Creates the drifts; magic!
     def _gen_drifts(nrow, ncol):
         idx = np.arange(0, nrow)
-        print(idx)
+
         drifts = np.zeros((nrow, ncol+1))
         drifts[:,0] = np.repeat(1 / np.sqrt(nrow), nrow)
         for col in range(2, ncol+1):
-            print(col)
             drift = np.sqrt(2. / nrow) * 10. * np.cos(
                     np.pi * (2. * idx + 1.) * (col - 1.) / (2. * nrow))
-            print(drift)
             drifts[:, col] = drift
             
         return drifts
     
     noise = _gen_drifts(N, nbasis)
     noise = noise[:,1:]     ## Drop the first col
-    print(noise)
     noise = noise.sum(1)    ## Sum the rows, creating
                             ## creating the final noise
     
