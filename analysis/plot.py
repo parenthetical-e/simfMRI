@@ -19,6 +19,7 @@ def noise_spectrum(noise, name=None):
 
 # import simfMRI; simfMRI.analysis.plot.random_timecourses_all_models("rw_5000_learn.hdf5", 10, 5000, "rw_5000_learn")
 
+
 def random_timecourses_all_models(hdf, N, nsim, basename):
     """ Plot <N> randomly selected BOLD and design matrix timecourses 
     from <nsim> options for all models in <hdf>.  
