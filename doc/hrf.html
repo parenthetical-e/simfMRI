@@ -1,0 +1,42 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module hrf</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>hrf</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/epete/src/simfMRI/hrf.py">/home/epete/src/simfMRI/hrf.py</a></font></td></tr></table>
+    <p><tt>A&nbsp;collection&nbsp;of&nbsp;hemodynamic&nbsp;response&nbsp;functions.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="scipy.stats.html">scipy.stats</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-double_gamma"><strong>double_gamma</strong></a>(width<font color="#909090">=32</font>, TR<font color="#909090">=1</font>, a1<font color="#909090">=6.0</font>, a2<font color="#909090">=12.0</font>, b1<font color="#909090">=0.9</font>, b2<font color="#909090">=0.9</font>, c<font color="#909090">=0.35</font>)</dt><dd><tt>Returns&nbsp;a&nbsp;HRF.&nbsp;&nbsp;Defaults&nbsp;are&nbsp;the&nbsp;canonical&nbsp;parameters.</tt></dd></dl>
+ <dl><dt><a name="-preturb_canonical"><strong>preturb_canonical</strong></a>(fraction, width, TR, prng<font color="#909090">=None</font>)</dt><dd><tt>Add&nbsp;scaled&nbsp;(by&nbsp;&lt;fraction&gt;&nbsp;(0-1))&nbsp;white&nbsp;noise&nbsp;to&nbsp;a&nbsp;randomly&nbsp;selected&nbsp;<br>
+canonical&nbsp;double&nbsp;gamma&nbsp;HRF&nbsp;parameter.&nbsp;&nbsp;Returns&nbsp;a&nbsp;dict&nbsp;of&nbsp;new&nbsp;HRF&nbsp;<br>
+parameters,&nbsp;all&nbsp;but&nbsp;the&nbsp;perturbed&nbsp;one&nbsp;match&nbsp;canonical&nbsp;values.&nbsp;&nbsp;It&nbsp;also&nbsp;<br>
+returns&nbsp;a&nbsp;numpy&nbsp;RandomState()&nbsp;object.<br>
+&nbsp;<br>
+If&nbsp;a&nbsp;RandomState()&nbsp;was&nbsp;passed&nbsp;via&nbsp;prng&nbsp;it&nbsp;is&nbsp;returned,&nbsp;having&nbsp;been&nbsp;used&nbsp;for&nbsp;<br>
+sampling&nbsp;by&nbsp;this&nbsp;function.&nbsp;&nbsp;If&nbsp;&lt;prng&gt;&nbsp;was&nbsp;None&nbsp;or&nbsp;a&nbsp;number,&nbsp;a&nbsp;RandomState()&nbsp;<br>
+was&nbsp;created&nbsp;and&nbsp;is&nbsp;(also)&nbsp;now&nbsp;returned.<br>
+&nbsp;<br>
+&lt;width&gt;&nbsp;and&nbsp;&lt;TR&gt;&nbsp;are&nbsp;not&nbsp;used&nbsp;here&nbsp;but&nbsp;are&nbsp;needed&nbsp;for&nbsp;HRF&nbsp;calculations&nbsp;<br>
+downstream.</tt></dd></dl>
+</td></tr></table>
+</body></html>

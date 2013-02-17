@@ -1,0 +1,47 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module mapreduce</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>mapreduce</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/epete/src/simfMRI/mapreduce.py">/home/epete/src/simfMRI/mapreduce.py</a></font></td></tr></table>
+    <p><tt>Tools&nbsp;to&nbsp;allow&nbsp;simfMRI&nbsp;experiments&nbsp;to&nbsp;be&nbsp;used&nbsp;in&nbsp;the&nbsp;Hadoop&nbsp;<br>
+mapreduce-esque&nbsp;way.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="shutil.html">shutil</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-create_chunks"><strong>create_chunks</strong></a>(nrun, ncore)</dt><dd><tt>A&nbsp;mapper&nbsp;that&nbsp;divides&nbsp;&lt;nrum&gt;&nbsp;simulations&nbsp;into&nbsp;&lt;ncore&gt;&nbsp;pieces,&nbsp;<br>
+returning&nbsp;a&nbsp;list&nbsp;of&nbsp;&lt;ncore&gt;&nbsp;lists,&nbsp;with&nbsp;&lt;nrun&gt;&nbsp;integers&nbsp;counting&nbsp;up<br>
+from&nbsp;0&nbsp;(starting&nbsp;in&nbsp;the&nbsp;first&nbsp;list).<br>
+&nbsp;<br>
+Note:&nbsp;&lt;ncore&gt;&nbsp;must&nbsp;evenly&nbsp;divide&nbsp;&lt;nrun&gt;.</tt></dd></dl>
+ <dl><dt><a name="-mk_tmp"><strong>mk_tmp</strong></a>(pid)</dt><dd><tt>Make&nbsp;a&nbsp;./tmp/&lt;pid&gt;&nbsp;subdirectory.</tt></dd></dl>
+ <dl><dt><a name="-reduce_chunks"><strong>reduce_chunks</strong></a>(results_in_chunks)</dt><dd><tt>Reduce&nbsp;&lt;results_in_chunks&gt;&nbsp;(a&nbsp;list&nbsp;of&nbsp;results&nbsp;lists&nbsp;from&nbsp;a&nbsp;parallel<br>
+run)&nbsp;to&nbsp;a&nbsp;flat&nbsp;list&nbsp;of&nbsp;results.</tt></dd></dl>
+ <dl><dt><a name="-reduce_tmp_files"><strong>reduce_tmp_files</strong></a>(pid)</dt><dd><tt>Reduce&nbsp;(combine)&nbsp;all&nbsp;the&nbsp;seperate&nbsp;.hdf5&nbsp;files&nbsp;in&nbsp;./tmp/&lt;pid&gt;&nbsp;into&nbsp;<br>
+a&nbsp;single&nbsp;file&nbsp;(./tmp/&lt;pid&gt;.hdf5)&nbsp;then&nbsp;delete&nbsp;all&nbsp;.hdf5&nbsp;files&nbsp;in&nbsp;that<br>
+directory.&nbsp;<br>
+&nbsp;<br>
+Note:&nbsp;if&nbsp;&lt;pid&gt;.hdf&nbsp;already&nbsp;exists&nbsp;data&nbsp;is&nbsp;appended&nbsp;if&nbsp;it&nbsp;is&nbsp;unique,<br>
+or&nbsp;old&nbsp;data&nbsp;is&nbsp;silently&nbsp;overwritten.</tt></dd></dl>
+ <dl><dt><a name="-rm_tmp"><strong>rm_tmp</strong></a>(pid)</dt><dd><tt>Delete&nbsp;a&nbsp;./tmp/&lt;pid&gt;&nbsp;subdirectory&nbsp;(even&nbsp;if&nbsp;it&nbsp;contains&nbsp;data).</tt></dd></dl>
+ <dl><dt><a name="-write_to_tmp"><strong>write_to_tmp</strong></a>(name, pid, results)</dt><dd><tt>Save&nbsp;the&nbsp;&lt;results&gt;&nbsp;list&nbsp;to&nbsp;./tmp/&lt;pid&gt;</tt></dd></dl>
+</td></tr></table>
+</body></html>

@@ -1,0 +1,60 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module timing</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>timing</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/epete/src/simfMRI/timing.py">/home/epete/src/simfMRI/timing.py</a></font></td></tr></table>
+    <p><tt>A&nbsp;module&nbsp;process&nbsp;trial&nbsp;timing&nbsp;information.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-add_empty"><strong>add_empty</strong></a>(data, conditions)</dt><dd><tt>Collected&nbsp;behavioral&nbsp;data&nbsp;may&nbsp;not&nbsp;include&nbsp;(empty)<br>
+jitter&nbsp;periods.&nbsp;&nbsp;This&nbsp;function&nbsp;corrects&nbsp;for&nbsp;that,&nbsp;adding&nbsp;<br>
+zero-filled&nbsp;rows&nbsp;to&nbsp;data&nbsp;when&nbsp;conditions&nbsp;is&nbsp;zero.&nbsp;<br>
+&nbsp;<br>
+&lt;conditions&gt;&nbsp;shouls&nbsp;be&nbsp;an&nbsp;integer&nbsp;sequence&nbsp;of&nbsp;trial&nbsp;events.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'0'&nbsp;indicates&nbsp;a&nbsp;jitter&nbsp;period.&nbsp;&nbsp;In&nbsp;implictly&nbsp;assumes&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jitter&nbsp;and&nbsp;trial&nbsp;lengths&nbsp;are&nbsp;the&nbsp;same.<br>
+&lt;data&gt;&nbsp;should&nbsp;be&nbsp;a&nbsp;list.</tt></dd></dl>
+ <dl><dt><a name="-dtime"><strong>dtime</strong></a>(arr, durations, drop<font color="#909090">=None</font>, drop_value<font color="#909090">=0</font>)</dt><dd><tt>Repeat&nbsp;each&nbsp;element&nbsp;or&nbsp;row&nbsp;in&nbsp;&lt;arr&gt;&nbsp;by&nbsp;the&nbsp;factor<br>
+specified&nbsp;in&nbsp;durations.<br>
+&nbsp;<br>
+&lt;drop&gt;&nbsp;allows&nbsp;you&nbsp;to&nbsp;create&nbsp;sub-trial/duration&nbsp;time&nbsp;<br>
+representations.&nbsp;It&nbsp;is&nbsp;a&nbsp;binary&nbsp;list&nbsp;of&nbsp;length&nbsp;duration.<br>
+'1'&nbsp;mean&nbsp;drop&nbsp;that&nbsp;entry;&nbsp;0&nbsp;means&nbsp;keep.<br>
+&nbsp;<br>
+For&nbsp;example,&nbsp;if&nbsp;the&nbsp;next&nbsp;element&nbsp;was&nbsp;2&nbsp;and&nbsp;duration&nbsp;was&nbsp;3<br>
+the&nbsp;new&nbsp;represenation&nbsp;would&nbsp;be&nbsp;[2,&nbsp;2,&nbsp;2]&nbsp;if,&nbsp;that&nbsp;is,<br>
+drop&nbsp;was&nbsp;None&nbsp;or&nbsp;[0,&nbsp;0,&nbsp;0].&nbsp;&nbsp;<br>
+&nbsp;<br>
+However&nbsp;if&nbsp;drop&nbsp;was&nbsp;[0,&nbsp;1,&nbsp;0]&nbsp;the&nbsp;trial&nbsp;would&nbsp;become<br>
+[2,&nbsp;0,&nbsp;2].&nbsp;&nbsp;Likwise&nbsp;if&nbsp;drop&nbsp;was&nbsp;[1,&nbsp;0,&nbsp;1]&nbsp;trial&nbsp;would&nbsp;be<br>
+[0,&nbsp;2,&nbsp;0].<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+In&nbsp;the&nbsp;above,&nbsp;the&nbsp;drop_value&nbsp;was&nbsp;set&nbsp;to&nbsp;the&nbsp;default&nbsp;(0)<br>
+to&nbsp;alters&nbsp;this&nbsp;change&nbsp;&lt;drop_value&gt;,&nbsp;for&nbsp;example<br>
+a&nbsp;string&nbsp;'0'&nbsp;or&nbsp;a&nbsp;bool&nbsp;(False)&nbsp;would&nbsp;work&nbsp;just&nbsp;as&nbsp;well.<br>
+&nbsp;<br>
+Note:&nbsp;If&nbsp;duration&nbsp;for&nbsp;that&nbsp;trial&nbsp;is&nbsp;less&nbsp;than&nbsp;the&nbsp;length<br>
+of&nbsp;drop,&nbsp;the&nbsp;rightside&nbsp;excess&nbsp;entries&nbsp;of&nbsp;drop&nbsp;are&nbsp;ignored.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;the&nbsp;duration&nbsp;mapped&nbsp;trials.</tt></dd></dl>
+</td></tr></table>
+</body></html>

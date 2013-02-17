@@ -1,0 +1,102 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module noise</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>noise</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/epete/src/simfMRI/noise.py">/home/epete/src/simfMRI/noise.py</a></font></td></tr></table>
+    <p><tt>Noise&nbsp;models.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="scipy.stats.html">scipy.stats</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-ar1"><strong>ar1</strong></a>(N, alpha<font color="#909090">=0.2</font>, prng<font color="#909090">=None</font>)</dt><dd><tt>Create&nbsp;AR1&nbsp;noise&nbsp;(of&nbsp;length&nbsp;&lt;N&gt;,&nbsp;and&nbsp;strength&nbsp;&lt;alpha&gt;),&nbsp;based&nbsp;on&nbsp;<br>
+a&nbsp;white&nbsp;noise&nbsp;stream.&nbsp;<br>
+&nbsp;<br>
+Te&nbsp;default&nbsp;of&nbsp;alpha&nbsp;of&nbsp;0.2&nbsp;was&nbsp;taken&nbsp;from&nbsp;the&nbsp;'temporalnoise.R'&nbsp;function<br>
+in&nbsp;the&nbsp;R&nbsp;'neuRosim'&nbsp;package&nbsp;(ver&nbsp;02-10):<br>
+&nbsp;<br>
+<a href="http://cran.r-project.org/web/packages/neuRosim/index.html">http://cran.r-project.org/web/packages/neuRosim/index.html</a>&nbsp;<br>
+&nbsp;<br>
+Notes&nbsp;on&nbsp;prng:<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;np.random.RandomState()&nbsp;instance,&nbsp;it&nbsp;is&nbsp;used&nbsp;for&nbsp;random<br>
+&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;generation.&nbsp;&nbsp;<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;number&nbsp;that&nbsp;number&nbsp;is&nbsp;used&nbsp;to&nbsp;seed&nbsp;(i.e.,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomState(&lt;prng&gt;)).<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;None,&nbsp;the&nbsp;seed&nbsp;is&nbsp;set&nbsp;automagically.</tt></dd></dl>
+ <dl><dt><a name="-lowfreqdrift"><strong>lowfreqdrift</strong></a>(N, TR, prng<font color="#909090">=None</font>)</dt><dd><tt>Create&nbsp;noise&nbsp;of&nbsp;length&nbsp;&lt;N&gt;&nbsp;with&nbsp;a&nbsp;low&nbsp;frequency&nbsp;drift.&nbsp;&nbsp;Frequency&nbsp;is&nbsp;&nbsp;&nbsp;&nbsp;<br>
+randomly&nbsp;selected&nbsp;from&nbsp;a&nbsp;uniform&nbsp;distribution&nbsp;spanning&nbsp;0.002-0.015&nbsp;Hz,&nbsp;&nbsp;<br>
+a&nbsp;range&nbsp;taken&nbsp;from:<br>
+&nbsp;<br>
+Smith&nbsp;et&nbsp;al&nbsp;(1999),&nbsp;Investigation&nbsp;of&nbsp;the&nbsp;Low&nbsp;Frequency&nbsp;Drift&nbsp;in&nbsp;fMRI&nbsp;<br>
+Signal,&nbsp;NeuroImage&nbsp;9,&nbsp;526-533.<br>
+&nbsp;<br>
+----<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;was&nbsp;ported&nbsp;form&nbsp;a&nbsp;similar&nbsp;function&nbsp;('lowfreqdrift.R')<br>
+in&nbsp;the&nbsp;R&nbsp;'neuRosim'&nbsp;package&nbsp;(ver&nbsp;02-10):<br>
+&nbsp;<br>
+<a href="http://cran.r-project.org/web/packages/neuRosim/index.html">http://cran.r-project.org/web/packages/neuRosim/index.html</a><br>
+&nbsp;<br>
+Notes&nbsp;on&nbsp;prng:<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;np.random.RandomState()&nbsp;instance,&nbsp;it&nbsp;is&nbsp;used&nbsp;for&nbsp;random<br>
+&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;generation.&nbsp;&nbsp;<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;number&nbsp;that&nbsp;number&nbsp;is&nbsp;used&nbsp;to&nbsp;seed&nbsp;(i.e.,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomState(&lt;prng&gt;)).<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;None,&nbsp;the&nbsp;seed&nbsp;is&nbsp;set&nbsp;automagically.</tt></dd></dl>
+ <dl><dt><a name="-onef"><strong>onef</strong></a>(N, fraction, prng<font color="#909090">=None</font>)</dt><dd><tt>Given&nbsp;some&nbsp;&lt;noise&gt;&nbsp;(1d&nbsp;array),&nbsp;add&nbsp;autocorrelations&nbsp;approximating<br>
+a&nbsp;typical&nbsp;1/f&nbsp;fMRI&nbsp;distribution.<br>
+&nbsp;<br>
+TODO&nbsp;Say&nbsp;more&nbsp;about&nbsp;1/f&nbsp;parameters&nbsp;here.&nbsp;<br>
+&nbsp;<br>
+Notes&nbsp;on&nbsp;prng:<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;np.random.RandomState()&nbsp;instance,&nbsp;it&nbsp;is&nbsp;used&nbsp;for&nbsp;random<br>
+&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;generation.&nbsp;&nbsp;<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;number&nbsp;that&nbsp;number&nbsp;is&nbsp;used&nbsp;to&nbsp;seed&nbsp;(i.e.,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomState(&lt;prng&gt;)).<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;None,&nbsp;the&nbsp;seed&nbsp;is&nbsp;set&nbsp;automagically.</tt></dd></dl>
+ <dl><dt><a name="-physio"><strong>physio</strong></a>(N, TR, sigma<font color="#909090">=1</font>, freq_heart<font color="#909090">=1.17</font>, freq_resp<font color="#909090">=0.2</font>, prng<font color="#909090">=None</font>)</dt><dd><tt>Create&nbsp;periodic&nbsp;physiological&nbsp;noise&nbsp;of&nbsp;length&nbsp;&lt;N&gt;&nbsp;based&nbsp;on&nbsp;<br>
+&lt;freq_heart&gt;&nbsp;and&nbsp;&lt;freq_resp&gt;&nbsp;and&nbsp;a&nbsp;white&nbsp;noise&nbsp;process.&nbsp;<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;was&nbsp;ported&nbsp;form&nbsp;a&nbsp;similar&nbsp;function&nbsp;('physnoise.R')<br>
+in&nbsp;the&nbsp;R&nbsp;'neuRosim'&nbsp;package&nbsp;(ver&nbsp;02-10):<br>
+&nbsp;<br>
+<a href="http://cran.r-project.org/web/packages/neuRosim/index.html">http://cran.r-project.org/web/packages/neuRosim/index.html</a><br>
+&nbsp;<br>
+Notes&nbsp;on&nbsp;prng:<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;np.random.RandomState()&nbsp;instance,&nbsp;it&nbsp;is&nbsp;used&nbsp;for&nbsp;random<br>
+&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;generation.&nbsp;&nbsp;<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;number&nbsp;that&nbsp;number&nbsp;is&nbsp;used&nbsp;to&nbsp;seed&nbsp;(i.e.,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomState(&lt;prng&gt;)).<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;None,&nbsp;the&nbsp;seed&nbsp;is&nbsp;set&nbsp;automagically.</tt></dd></dl>
+ <dl><dt><a name="-shift"><strong>shift</strong></a>(noise, offset, prng<font color="#909090">=None</font>)</dt><dd><tt>Shift&nbsp;&lt;noise&gt;&nbsp;(1d)&nbsp;by&nbsp;&lt;offset&gt;.&nbsp;&nbsp;If&nbsp;&lt;white&gt;&nbsp;is&nbsp;true&nbsp;add&nbsp;white&nbsp;<br>
+noise&nbsp;as&nbsp;well.&nbsp;<br>
+&nbsp;<br>
+&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;dummy&nbsp;included&nbsp;to&nbsp;keep&nbsp;things&nbsp;consistent&nbsp;with&nbsp;the&nbsp;other<br>
+noise&nbsp;function's&nbsp;returns.</tt></dd></dl>
+ <dl><dt><a name="-white"><strong>white</strong></a>(N, sigma<font color="#909090">=1</font>, prng<font color="#909090">=None</font>)</dt><dd><tt>Create&nbsp;and&nbsp;return&nbsp;a&nbsp;white&nbsp;noise&nbsp;array&nbsp;of&nbsp;length&nbsp;&lt;N&gt;.<br>
+&nbsp;<br>
+Notes&nbsp;on&nbsp;prng:<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;np.random.RandomState()&nbsp;instance,&nbsp;it&nbsp;is&nbsp;used&nbsp;for&nbsp;random<br>
+&nbsp;&nbsp;&nbsp;&nbsp;number&nbsp;generation.&nbsp;&nbsp;<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;a&nbsp;number&nbsp;that&nbsp;number&nbsp;is&nbsp;used&nbsp;to&nbsp;seed&nbsp;(i.e.,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomState(&lt;prng&gt;)).<br>
+If&nbsp;&lt;prng&gt;&nbsp;is&nbsp;None,&nbsp;the&nbsp;seed&nbsp;is&nbsp;set&nbsp;automagically.</tt></dd></dl>
+</td></tr></table>
+</body></html>
