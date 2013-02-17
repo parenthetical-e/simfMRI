@@ -1,7 +1,12 @@
 import os
+from os.path import join, abspath
 import numpy as np
 import itertools
+import h5py
+
+from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
+
 from bigstats.hist import RHist
 from simfMRI.io import read_hdf_inc, get_model_meta, get_model_names
 
@@ -12,21 +17,91 @@ def noise_spectrum(noise, name=None):
     pass
 
 
+# import simfMRI; simfMRI.analysis.plot.random_timecourses_all_models("rw_5000_learn.hdf5", 10, 5000, "rw_5000_learn")
+
+def random_timecourses_all_models(hdf, N, nsim, basename):
+    """ Plot <N> randomly selected BOLD and design matrix timecourses 
+    from <nsim> options for all models in <hdf>.  
+    
+    Each model's plots are saved as a pdf, prefixed with tc_<basename>. """
+    
+    # Make a list of the models 
+    # to plot and plot them 
+    models = get_model_names(hdf)
+    for mod in models:
+        print("Plotting {0}.".format(mod))
+        random_timecourses(hdf, mod, N, nsim, "tc_"+basename+"_"+mod)
+    
+    
+def random_timecourses(hdf, model, N, nsim, name=None):
+    """ Plot <N> randomly selected BOLD and design matrix timecourses 
+    from <nsim> options for <model> from <hdf>.  
+
+    If <name> is not None, the results are saved as a pdf. """
+
+    # Open a handle the hdf file
+    f = h5py.File(hdf,'r')
+
+    # Create (or use) a handle to a multi-page pdf
+    if name != None:
+        if isinstance(name, PdfPages):
+            pdf = name  ## Use
+        else:
+            pdf = PdfPages('{0}.pdf'.format(name))  ## Create
+    
+    # Randomly select sims between 0-nsim
+    # And mae seperate plots for each
+    # adding them to the same pdf.
+    selected = np.random.randint(0, nsim, N)
+    for sel in selected:
+        
+        # Get metadata
+        meta =  get_model_meta(hdf, model)
+        
+        # Create a figure window
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
+        # Get the data
+        dm = f[os.path.join("/", str(sel), model, "dm")].value
+        bold = f[os.path.join("/", str(sel), model, "bold")].value
+        
+        # PLot it
+        ax.plot(dm)
+        ax.plot(bold, color="grey")
+
+        # Pretty up the plot
+        boldleg = ["".join( ["BOLD: ", ] + meta["bold"].tolist()), ]
+        plt.legend(meta["dm"] + boldleg)
+        plt.title('Timecourse {0} from {1}.'.format(sel, model))
+            ## TODO add labels?
+        
+        if name != None:
+            # Add to pdf...
+            plt.savefig(pdf, format="pdf")
+
+    if name != None:
+        pdf.close()
+
+
 def hist_t_all_models(path, hdf, basename):
     """ Given a <path> and the <hdf> name, plot and save all the models in
     the <hdf>, prefixing each with <basename>.
     """
-    
-    hdfpath = os.path.join(path, hdf)
-    
+
+    # Create a handle to create a multi-page pdf
+    # for the mod plots
+    pdf = PdfPages(os.path.join(path, '{0}.pdf'.format(basename)))
+
     # Make a list of the models 
     # to plot and plot them 
+    hdfpath = os.path.join(path, hdf)
     models = get_model_names(hdfpath)
     for mod in models:
         print("Plotting {0}.".format(mod))
-        
-        pname = os.path.join(path, basename+"_"+mod)
-        hist_t(hdfpath, mod, pname)
+        hist_t(hdfpath, mod, pdf)
+
+    pdf.close()
 
 
 def hist_t(hdf,model,name=None):
@@ -80,7 +155,7 @@ def hist_t(hdf,model,name=None):
     plt.title('{0} -- BOLD: {1}'.format(model,meta['bold']))
 
     if name != None:
-        plt.savefig(name+".pdf")
+        plt.savefig(name, format="pdf")
         
 
 # FROM MASTER:
