@@ -17,7 +17,11 @@ import numpy as np
 from copy import deepcopy
 from collections import defaultdict
 from functools import partial
-from scikits.statsmodels.api import GLS
+try:
+    from statsmodels.api import GLS
+except ImportError:
+    from scikits.statsmodels.api import GLS
+
 from simfMRI import norm
 from simfMRI.noise import white
 from simfMRI.hrf import double_gamma
@@ -55,12 +59,12 @@ class Exp():
                 "b1":0.9,"b2":0.9,"c":0.35}
         self.hrf = double_gamma(**self.hrf_params)
         # ----
-
+        
         # ----
         # Setup globals,
         self.TR = TR
-        self.ISI = ISI        
-
+        self.ISI = ISI
+        
         # --
         # and intialize the simulation"s (private) 
         # data structues
@@ -69,7 +73,6 @@ class Exp():
         self.results = {}   ## Simulation results go here.
                             ## After a save_state() call.
         self.glm = None     ## Where the GLM object is stored after a fit call.
-        # --
         # ----
         
         # ----
@@ -297,7 +300,7 @@ class Exp():
 
         cond_levels = sorted(list(set(self.trials)))
             ## Find and sort conditions in trials
-
+        
         # Some useful counts...
         num_conds = len(cond_levels)
         num_tr = np.sum(self.durations)
@@ -338,7 +341,6 @@ class Exp():
         # Some useful counts...
         num_names = len(names)
         num_tr = np.sum(self.durations)
-        
         dm_param = None
             ## Will eventually hold the 
             ## parametric DM.
@@ -352,7 +354,6 @@ class Exp():
             # Create a temp dm to hold this
             # condition"s data
             dm_temp = np.zeros((num_tr, num_names))
-
             mask_in_tr = dtime(
                     self.trials == cond, self.durations, drop, False)
 
