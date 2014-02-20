@@ -14,24 +14,26 @@ You might also want to override
 import re
 import ConfigParser
 import numpy as np
+
 from copy import deepcopy
 from collections import defaultdict
 from functools import partial
+
+from . import norm
+from .noise import white
+from .hrf import double_gamma
+from .timing import dtime
+
 try:
     from statsmodels.api import GLS
 except ImportError:
     from scikits.statsmodels.api import GLS
 
-from simfMRI import norm
-from simfMRI.noise import white
-from simfMRI.hrf import double_gamma
-from simfMRI.timing import dtime
 
-
-class Exp():
+class Exp(object):
     """
     A template class for running easily parallelizable event-related fMRI
-    simulations.  
+    Monte Carlo experiments.  
     
     Note: Exp() can"t be run as is.  For simple run-able experiments see 
         simfMRI.bin.examples.*
@@ -416,7 +418,7 @@ class Exp():
         # HRF?
         if convolve:
             self.bold = self._convolve_hrf(self.bold)
-        
+
         # And add noise.
         noise, self.prng = self.noise_f(N=self.bold.shape[0], prng=self.prng)
         self.bold += noise
@@ -639,4 +641,174 @@ class Exp():
                     self.save_state(name=model)
         
         return self.results
+
+
+class Reproduce(Exp):
+    """A template class for reproducing exact empirical experiments"""
+
+    def __init__(self, y, data, 
+            noise_f=None, hrf_f=None, hrf_params=None, TR=2, prng=None):
+        super(Reproduce, self).__init__(TR, TR, prng)
         
+        self.y = np.asarray(y)
+        self.data = data
+
+        # Setup HRF and noise using defaults 
+        # if needed
+        if noise_f == None:
+            self.noise_f = white
+        else:
+            self.noise_f = noise_f
+
+        if hrf_f == None:
+            self.hrf_params = {"width":32,"TR":1,"a1":6.0,"a2":12.,
+                "b1":0.9,"b2":0.9,"c":0.35}
+            self.hrf = double_gamma(**self.hrf_params)
+        else:
+            self.hrf_params = hrf_params
+            self.hrf = hrf_f(**self.hrf_params)
+
+
+    def _check_td_isNone(self):
+        """Ensures self.trials and self.durations are None.
+        
+        Note: I should not be breaking the inheritancechain like this but 
+        all other options are worse I think. Sorry Guido.
+        """
+
+        if self.durations != None:
+            raise AttributeError(
+                    "durations should not be set for Reproduce instances")
+        if self.trials != None:
+            raise AttributeError(
+                    "trials should not be set for Reproduce instances")
+
+
+    def create_dm_from_y(self, convolve=True):
+        """ Create a unit (boxcar-only) DM with one columns for each 
+        condition in self.y activations span self.index.  
+        
+         If <convolve> the dm is convolved with the HRF (self.hrf)."""
+
+        self._check_td_isNone()
+
+        cond_levels = sorted(np.unique(self.y))
+        num_conds = len(cond_levels)
+        num_tr = len(self.y)
+
+        # Convert y to a design matrix, a 2d
+        # column oriented matrix of (0,1)
+        dm_unit = np.zeros((num_tr, num_conds))
+        for col, cond in enumerate(cond_levels):
+            dm_unit[cond == self.y,col] = 1
+        self.dm = dm_unit
+        
+        if convolve:
+            self.dm = self._convolve_hrf(self.dm)
+
+
+    def create_dm_param_from_y(self, names, box=True, orth=False, convolve=True):
+        """ Create a parametric design matrix based on <names> in self.data. 
+        
+        If <box> a univariate dm is created that fills the leftmost
+        side of the dm.
+
+        If <orth> each regressor is orthgonalized with respect to its
+        left-hand neighbor (excluding the baseline).
+        
+        If <convolve> the dm is convolved with the HRF (self.hrf). """
+        
+        self._check_td_isNone()
+
+        cond_levels = sorted(np.unique(self.y))
+        num_conds = len(cond_levels)
+        num_tr = len(self.y)
+        num_names = len(names)
+       
+        dm_param = None
+        for cond in cond_levels:
+            if cond == 0:
+                continue
+                    ## We add the baseline 
+                    ## in at the end
+
+            # Create a temp dm to hold this
+            # condition"s data
+            dm_temp = np.zeros((num_tr, num_names))
+            mask_in_tr = y == cond
+
+            # Get the named data then add to the temp_dm
+            # filtering by mask_in_tr
+            for col, name in enumerate(names):
+                data_in_tr = np.asarray(self.data[name])
+
+                if data_in_tr.shape != y.shape:
+                    raise AttributeError(
+                            "{0} in data does not match y".format(name))
+
+                dm_temp[mask_in_tr,col] = data_in_tr[mask_in_tr] 
+
+            if dm_param == None:
+                dm_param = dm_temp  ## reinit
+            else:
+                dm_param = np.hstack((dm_param, dm_temp))  ## adding
+
+        # Create the unit DM too, then combine them.
+        # defining self.dm in the process
+        self.create_dm(convolve=False)
+        dm_unit = self.dm.copy()
+        self.dm = None  
+            ## Copy and reset
+
+        if box:
+            self.dm = np.hstack((dm_unit, dm_param))
+        else:
+            # If not including the boxcar,
+            # we still need the baseline model.
+            baseline = dm_unit[:,0]
+            baseline = baseline.reshape(baseline.shape[0], 1)
+            self.dm = np.hstack((baseline, dm_param))
+                
+        if orth: 
+            self._orth_dm()
+
+        if convolve: 
+            self.dm = self._convolve_hrf(self.dm)
+ 
+    def save_state(self, name):
+        """
+        Saves most of the state of the current simulation to results, keyed
+        on <name>.  Saves greedily, trading storage space for security and
+        redundancy.
+        """
+        
+        tosave = {
+            "TR":"TR",
+            "ISI":"ISI",
+            "trials":"trials",
+            "durations" : "durations",
+            "y" : "y",
+            "data":"data",
+            "dm":"dm",
+            "bold":"bold"
+        }
+            ## This list is only for attr hung directly off
+            ## of self.
+        
+        # Add a name to results
+        self.results[name] = {}
+        
+        # Try to get each attr (a value in the dict above)
+        # first as function (without args) then as a regular
+        # attribute.  If both fail, silently move on.
+        for k,v in tosave.items():
+            try:
+                self.results[name][k] = deepcopy(getattr(self,v)())
+            except TypeError:
+                self.results[name][k] = deepcopy(getattr(self,v))
+            except AttributeError:
+                continue
+
+        # Now add the reformatted data from the current model,
+        # if any.
+        self.results[name].update(self._reformat_model())      
