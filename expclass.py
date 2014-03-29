@@ -45,7 +45,7 @@ class Exp(object):
         # and before use.
         self.trials = None
         self.durations = None
-        self.prng = None
+        self.prng = prng
             ## Hang a RandomState object off
             ## of self.
         
